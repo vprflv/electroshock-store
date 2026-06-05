@@ -2,21 +2,19 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { type Product } from '@/lib/mock-products';
-import {useCart} from "@/store/useCart";
-
-
+import CartQuantityControls from '@/components/CartQuantityControls';
+import {useState} from "react";
+import {getProductImage} from "@/lib/utils/product-image";
 
 export default function ProductCard({ product }: { product: Product }) {
-
-
-    const { addToCart } = useCart();
-
-
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const discount = product.oldPrice
         ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
         : 0;
+
+    const currentImage = getProductImage(product, currentImageIndex);
 
     return (
         <div className="group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">
@@ -25,7 +23,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <Link href={`/product/${product.id}`} className="block">
                 <div className="relative h-64 bg-zinc-950 overflow-hidden">
                     <Image
-                        src={product.image}
+                        src={currentImage}
                         alt={product.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -50,8 +48,8 @@ export default function ProductCard({ product }: { product: Product }) {
                     <div className="flex justify-between items-start mb-1">
                         <span className="font-medium text-yellow-400">{product.brand}</span>
                         <span className="text-xs text-zinc-500 font-mono">
-              Арт. {product.article}
-            </span>
+                            Арт. {product.article}
+                        </span>
                     </div>
 
                     <div className="text-xs text-zinc-500 mb-2">{product.category}</div>
@@ -61,13 +59,13 @@ export default function ProductCard({ product }: { product: Product }) {
                     </h3>
 
                     <div className="flex items-center gap-2 mb-5">
-            <span className="text-3xl font-bold text-yellow-400">
-              {product.price.toLocaleString('ru')} ₽
-            </span>
+                        <span className="text-3xl font-bold text-yellow-400">
+                            {product.price.toLocaleString('ru')} ₽
+                        </span>
                         {product.oldPrice && (
                             <span className="text-sm line-through text-zinc-500">
-                {product.oldPrice.toLocaleString('ru')} ₽
-              </span>
+                                {product.oldPrice.toLocaleString('ru')} ₽
+                            </span>
                         )}
                     </div>
 
@@ -77,20 +75,12 @@ export default function ProductCard({ product }: { product: Product }) {
                 </div>
             </Link>
 
-            {/* Кнопка "В корзину" — НЕ кликабельная ссылка */}
+            {/* ========== Блок с корзиной (с кнопкой или счётчиком) ========== */}
             <div className="px-6 pb-6 pt-2">
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        addToCart(product);
-                    }}
-                    className="w-full bg-white hover:bg-yellow-400 text-black font-medium py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95"
-                >
-                    <ShoppingCart className="w-5 h-5" />
-                    В корзину
-                </button>
+                <CartQuantityControls
+                    product={product}
+                    className="mb-0"
+                />
             </div>
         </div>
     );

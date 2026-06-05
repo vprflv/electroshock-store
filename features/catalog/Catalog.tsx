@@ -1,0 +1,212 @@
+'use client';
+
+import { useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import {useAllLightProducts, useProducts, useSearchProducts} from '@/hooks/queries/products';
+import Filters from "./filters/Filters";
+import ProductCard from "./product/ProductCard";
+import ProductCardSkeleton from "./product/ProductCardSkeleton";
+import { useCatalogFilters } from "./hooks/useCatalogFilters";
+import getPaginationPages from "@/lib/utils/pagination";
+
+type CatalogProps = {
+    searchTerm: string;
+};
+
+export default function Catalog({ searchTerm }: CatalogProps) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const currentPage = parseInt(searchParams.get('page') || '1');
+
+    const { data: allProducts = [] } = useAllLightProducts();
+    const { data: searchedProducts = [], isLoading: productsLoading } = useSearchProducts(searchTerm);
+
+    const productsAfterSearch = searchTerm.trim() ? searchedProducts : allProducts;
+
+    const {
+        selectedCategories,
+        setSelectedCategories,
+        selectedBrands,
+        setSelectedBrands,
+        priceRange,
+        setPriceRange,
+        inStockOnly,
+        setInStockOnly,
+        sortBy,
+        setSortBy,
+        resetFilters,
+        availableCategories,
+        availableBrands,
+    } = useCatalogFilters({ productsToShow: allProducts });
+
+    // Применяем фильтры
+    const finalFilteredProducts = useMemo(() => {
+        let result = [...productsAfterSearch];
+
+        if (selectedCategories.length > 0) {
+            result = result.filter(p => selectedCategories.includes(p.category));
+        }
+        if (selectedBrands.length > 0) {
+            result = result.filter(p => selectedBrands.includes(p.brand));
+        }
+
+        result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+
+        if (inStockOnly) {
+            result = result.filter(p => p.stock > 0);
+        }
+
+        switch (sortBy) {
+            case 'price-asc':
+                result.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                result.sort((a, b) => b.price - a.price);
+                break;
+            case 'new':
+                result.sort((a, b) => Number(b.id) - Number(a.id));
+                break;
+            case 'popular':
+            default:
+                result.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+                break;
+        }
+
+        return result;
+    }, [productsAfterSearch, selectedCategories, selectedBrands, priceRange, inStockOnly, sortBy]);
+
+    const itemsPerPage = 3;
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return finalFilteredProducts.slice(start, start + itemsPerPage);
+    }, [finalFilteredProducts, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(finalFilteredProducts.length / itemsPerPage);
+
+    const goToPage = (page: number) => {
+        const newParams = new URLSearchParams(searchParams.toString());
+        if (page === 1) {
+            newParams.delete('page');
+        } else {
+            newParams.set('page', page.toString());
+        }
+        router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+    };
+
+    // Автосброс страницы при изменении фильтров
+    useEffect(() => {
+        const hasActiveFilters =
+            selectedCategories.length > 0 ||
+            selectedBrands.length > 0 ||
+            inStockOnly ||
+            searchTerm.trim() !== '' ||
+            priceRange[0] !== 0 ||
+            priceRange[1] !== 20000 ||
+            sortBy !== 'popular';
+
+        if (hasActiveFilters && currentPage !== 1) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('page');
+            router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+        }
+    }, [selectedCategories.length, selectedBrands.length, inStockOnly, searchTerm, priceRange, sortBy, currentPage, searchParams, pathname, router]);
+
+    return (
+        <div className="max-w-7xl mx-auto px-6 py-10">
+            <div className="flex flex-col lg:flex-row gap-10">
+                {/* Фильтры */}
+                <div className="lg:w-80 flex-shrink-0">
+                    <Filters
+                        selectedCategories={selectedCategories}
+                        setSelectedCategories={setSelectedCategories}
+                        selectedBrands={selectedBrands}
+                        setSelectedBrands={setSelectedBrands}
+                        priceRange={priceRange}
+                        setPriceRange={setPriceRange}
+                        inStockOnly={inStockOnly}
+                        setInStockOnly={setInStockOnly}
+                        sortBy={sortBy}
+                        setSortBy={setSortBy}
+                        onReset={resetFilters}
+                        availableBrands={availableBrands}
+                        availableCategories={availableCategories}
+                    />
+                </div>
+
+                {/* Основная область каталога */}
+                <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                        <h2 className="text-4xl font-semibold">Каталог товаров</h2>
+                        <p className="text-zinc-400">
+                            Показано: <span className="text-white font-medium">
+                                {productsLoading ? '—' : paginatedProducts.length}
+                            </span> из {finalFilteredProducts.length}
+                        </p>
+                    </div>
+
+                    {/* Сетка товаров / Скелетоны */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {productsLoading ? (
+                            Array.from({ length: 6 }).map((_, index) => (
+                                <ProductCardSkeleton key={index} />
+                            ))
+                        ) : (
+                            paginatedProducts.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))
+                        )}
+                    </div>
+
+                    {/* Пагинация */}
+                    {!productsLoading && totalPages > 1 && (
+                        <div className="flex justify-center mt-16">
+                            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-2">
+                                <button
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 transition-all"
+                                >
+                                    ← Назад
+                                </button>
+
+                                <div className="flex items-center gap-1">
+                                    {getPaginationPages(currentPage, totalPages).map((page, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => typeof page === 'number' && goToPage(page)}
+                                            className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all text-sm font-medium ${
+                                                page === currentPage
+                                                    ? 'bg-yellow-400 text-black font-semibold scale-110'
+                                                    : 'hover:bg-zinc-800 text-zinc-300'
+                                            } ${page === '...' ? 'cursor-default text-zinc-500' : ''}`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 transition-all"
+                                >
+                                    Вперёд →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Сообщение о пустом результате */}
+                    {!productsLoading && finalFilteredProducts.length === 0 && (
+                        <div className="text-center py-20">
+                            <p className="text-2xl text-zinc-400 mb-2">Ничего не найдено 😔</p>
+                            <p className="text-zinc-500">Попробуйте изменить поиск или фильтры</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
