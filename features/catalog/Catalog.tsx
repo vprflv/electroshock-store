@@ -2,7 +2,14 @@
 
 import { useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import {useAllLightProducts, useProducts, useSearchProducts} from '@/hooks/queries/products';
+
+import {
+    useAllLightProducts,
+    useSearchProducts,
+    useCategories,
+    useBrands
+} from '@/hooks/queries/products';
+
 import Filters from "./filters/Filters";
 import ProductCard from "./product/ProductCard";
 import ProductCardSkeleton from "./product/ProductCardSkeleton";
@@ -20,16 +27,20 @@ export default function Catalog({ searchTerm }: CatalogProps) {
 
     const currentPage = parseInt(searchParams.get('page') || '1');
 
+    // Запросы данных
     const { data: allProducts = [] } = useAllLightProducts();
     const { data: searchedProducts = [], isLoading: productsLoading } = useSearchProducts(searchTerm);
+    const { data: categories = [] } = useCategories();
+    const { data: brands = [] } = useBrands();
 
     const productsAfterSearch = searchTerm.trim() ? searchedProducts : allProducts;
 
+    // Основные фильтры
     const {
-        selectedCategories,
-        setSelectedCategories,
-        selectedBrands,
-        setSelectedBrands,
+        selectedCategoryIds,
+        setSelectedCategoryIds,
+        selectedBrandIds,
+        setSelectedBrandIds,
         priceRange,
         setPriceRange,
         inStockOnly,
@@ -37,53 +48,23 @@ export default function Catalog({ searchTerm }: CatalogProps) {
         sortBy,
         setSortBy,
         resetFilters,
+        filteredProducts,
         availableCategories,
         availableBrands,
-    } = useCatalogFilters({ productsToShow: allProducts });
+    } = useCatalogFilters({
+        productsToShow: productsAfterSearch,        // ← важно: после поиска
+        availableCategories: categories,
+        availableBrands: brands,
+    });
 
-    // Применяем фильтры
-    const finalFilteredProducts = useMemo(() => {
-        let result = [...productsAfterSearch];
+    const itemsPerPage = 9; // Увеличил с 3 до 9 (рекомендую 9–12)
 
-        if (selectedCategories.length > 0) {
-            result = result.filter(p => selectedCategories.includes(p.category));
-        }
-        if (selectedBrands.length > 0) {
-            result = result.filter(p => selectedBrands.includes(p.brand));
-        }
-
-        result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-        if (inStockOnly) {
-            result = result.filter(p => p.stock > 0);
-        }
-
-        switch (sortBy) {
-            case 'price-asc':
-                result.sort((a, b) => a.price - b.price);
-                break;
-            case 'price-desc':
-                result.sort((a, b) => b.price - a.price);
-                break;
-            case 'new':
-                result.sort((a, b) => Number(b.id) - Number(a.id));
-                break;
-            case 'popular':
-            default:
-                result.sort((a, b) => (b.stock || 0) - (a.stock || 0));
-                break;
-        }
-
-        return result;
-    }, [productsAfterSearch, selectedCategories, selectedBrands, priceRange, inStockOnly, sortBy]);
-
-    const itemsPerPage = 3;
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return finalFilteredProducts.slice(start, start + itemsPerPage);
-    }, [finalFilteredProducts, currentPage, itemsPerPage]);
+        return filteredProducts.slice(start, start + itemsPerPage);
+    }, [filteredProducts, currentPage, itemsPerPage]);
 
-    const totalPages = Math.ceil(finalFilteredProducts.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     const goToPage = (page: number) => {
         const newParams = new URLSearchParams(searchParams.toString());
@@ -98,8 +79,8 @@ export default function Catalog({ searchTerm }: CatalogProps) {
     // Автосброс страницы при изменении фильтров
     useEffect(() => {
         const hasActiveFilters =
-            selectedCategories.length > 0 ||
-            selectedBrands.length > 0 ||
+            selectedCategoryIds.length > 0 ||
+            selectedBrandIds.length > 0 ||
             inStockOnly ||
             searchTerm.trim() !== '' ||
             priceRange[0] !== 0 ||
@@ -111,7 +92,18 @@ export default function Catalog({ searchTerm }: CatalogProps) {
             newParams.delete('page');
             router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
         }
-    }, [selectedCategories.length, selectedBrands.length, inStockOnly, searchTerm, priceRange, sortBy, currentPage, searchParams, pathname, router]);
+    }, [
+        selectedCategoryIds.length,
+        selectedBrandIds.length,
+        inStockOnly,
+        searchTerm,
+        priceRange,
+        sortBy,
+        currentPage,
+        searchParams,
+        pathname,
+        router
+    ]);
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-10">
@@ -119,10 +111,10 @@ export default function Catalog({ searchTerm }: CatalogProps) {
                 {/* Фильтры */}
                 <div className="lg:w-80 flex-shrink-0">
                     <Filters
-                        selectedCategories={selectedCategories}
-                        setSelectedCategories={setSelectedCategories}
-                        selectedBrands={selectedBrands}
-                        setSelectedBrands={setSelectedBrands}
+                        selectedCategoryIds={selectedCategoryIds}
+                        setSelectedCategoryIds={setSelectedCategoryIds}
+                        selectedBrandIds={selectedBrandIds}
+                        setSelectedBrandIds={setSelectedBrandIds}
                         priceRange={priceRange}
                         setPriceRange={setPriceRange}
                         inStockOnly={inStockOnly}
@@ -142,7 +134,7 @@ export default function Catalog({ searchTerm }: CatalogProps) {
                         <p className="text-zinc-400">
                             Показано: <span className="text-white font-medium">
                                 {productsLoading ? '—' : paginatedProducts.length}
-                            </span> из {finalFilteredProducts.length}
+                            </span> из {filteredProducts.length}
                         </p>
                     </div>
 
@@ -199,7 +191,7 @@ export default function Catalog({ searchTerm }: CatalogProps) {
                     )}
 
                     {/* Сообщение о пустом результате */}
-                    {!productsLoading && finalFilteredProducts.length === 0 && (
+                    {!productsLoading && filteredProducts.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-2xl text-zinc-400 mb-2">Ничего не найдено 😔</p>
                             <p className="text-zinc-500">Попробуйте изменить поиск или фильтры</p>

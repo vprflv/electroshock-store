@@ -1,7 +1,9 @@
 'use client';
 
-
 import { X } from 'lucide-react';
+type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'new';
+
+
 
 type FilterCategory = {
     id: string;
@@ -16,26 +18,26 @@ type FilterBrand = {
 };
 
 type FiltersProps = {
-    selectedCategories: string[];
-    setSelectedCategories: (cats: string[]) => void;
-    selectedBrands: string[];
-    setSelectedBrands: (brands: string[]) => void;
+    selectedCategoryIds: string[];
+    setSelectedCategoryIds: (ids: string[]) => void;
+    selectedBrandIds: string[];
+    setSelectedBrandIds: (ids: string[]) => void;
     priceRange: [number, number];
     setPriceRange: (range: [number, number]) => void;
     inStockOnly: boolean;
     setInStockOnly: (val: boolean) => void;
-    sortBy: string;
-    setSortBy: (val: string) => void;
+    sortBy: SortOption;
+    setSortBy: (val: SortOption) => void;
     onReset: () => void;
     availableBrands: FilterBrand[];
     availableCategories: FilterCategory[];
 };
 
 export default function Filters({
-                                    selectedCategories,
-                                    setSelectedCategories,
-                                    selectedBrands,
-                                    setSelectedBrands,
+                                    selectedCategoryIds,
+                                    setSelectedCategoryIds,
+                                    selectedBrandIds,
+                                    setSelectedBrandIds,
                                     priceRange,
                                     setPriceRange,
                                     inStockOnly,
@@ -63,7 +65,7 @@ export default function Filters({
                 <p className="text-sm text-zinc-400 mb-2">Сортировать</p>
                 <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white"
                 >
                     <option value="popular">По популярности</option>
@@ -76,65 +78,55 @@ export default function Filters({
             {/* Категории */}
             <div className="mb-6">
                 <p className="text-sm text-zinc-400 mb-3">Категория</p>
-                {availableCategories.map((cat) => {
-                    const categoryName = typeof cat === 'string' ? cat : cat.name;
-                    const categoryKey = typeof cat === 'string' ? cat : cat.id;
-
-                    return (
-                        <label
-                            key={categoryKey}
-                            className="flex items-center gap-2 mb-2 cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedCategories.includes(categoryName)}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        setSelectedCategories([...selectedCategories, categoryName]);
-                                    } else {
-                                        setSelectedCategories(
-                                            selectedCategories.filter(c => c !== categoryName)
-                                        );
-                                    }
-                                }}
-                                className="w-4 h-4 accent-yellow-400"
-                            />
-                            <span className="text-white">{categoryName}</span>
-                        </label>
-                    );
-                })}
+                {availableCategories.map((cat) => (
+                    <label
+                        key={cat.id}                    // ← теперь надёжно
+                        className="flex items-center gap-2 mb-2 cursor-pointer"
+                    >
+                        <input
+                            type="checkbox"
+                            checked={selectedCategoryIds.includes(cat.id)}
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedCategoryIds([...selectedCategoryIds, cat.id]);
+                                } else {
+                                    setSelectedCategoryIds(
+                                        selectedCategoryIds.filter(id => id !== cat.id)
+                                    );
+                                }
+                            }}
+                            className="w-4 h-4 accent-yellow-400"
+                        />
+                        <span className="text-white">{cat.name}</span>
+                    </label>
+                ))}
             </div>
 
             {/* Бренды */}
             <div className="mb-6">
                 <p className="text-sm text-zinc-400 mb-3">Бренд</p>
-                {availableBrands.map((brand) => {
-                    const brandName = typeof brand === 'string' ? brand : brand.name;
-                    const brandKey = typeof brand === 'string' ? brand : brand.id;
-
-                    return (
-                        <label
-                            key={brandKey}
-                            className="flex items-center gap-2 mb-2 cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedBrands.includes(brandName)}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        setSelectedBrands([...selectedBrands, brandName]);
-                                    } else {
-                                        setSelectedBrands(
-                                            selectedBrands.filter(b => b !== brandName)
-                                        );
-                                    }
-                                }}
-                                className="w-4 h-4 accent-yellow-400"
-                            />
-                            <span className="text-white">{brandName}</span>
-                        </label>
-                    );
-                })}
+                {availableBrands.map((brand) => (
+                    <label
+                        key={brand.id}
+                        className="flex items-center gap-2 mb-2 cursor-pointer"
+                    >
+                        <input
+                            type="checkbox"
+                            checked={selectedBrandIds.includes(brand.id)}
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedBrandIds([...selectedBrandIds, brand.id]);
+                                } else {
+                                    setSelectedBrandIds(
+                                        selectedBrandIds.filter(id => id !== brand.id)
+                                    );
+                                }
+                            }}
+                            className="w-4 h-4 accent-yellow-400"
+                        />
+                        <span className="text-white">{brand.name}</span>
+                    </label>
+                ))}
             </div>
 
             {/* Цена */}

@@ -3,15 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
-import { type Product } from '@/lib/mock-products';
-import CartQuantityControls from '@/components/CartQuantityControls';
 import {useState} from "react";
 import {getProductImage} from "@/lib/utils/product-image";
+import CartQuantityControls from "@/components/CartQuantityControls";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product: any }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
     const discount = product.oldPrice
-        ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
+        ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100 )
         : 0;
 
     const currentImage = getProductImage(product, currentImageIndex);
@@ -19,7 +19,7 @@ export default function ProductCard({ product }: { product: Product }) {
     return (
         <div className="group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">
 
-            {/* Кликабельная область — вся карточка кроме кнопки */}
+            {/* Кликабельная область */}
             <Link href={`/product/${product.id}`} className="block">
                 <div className="relative h-64 bg-zinc-950 overflow-hidden">
                     <Image
@@ -46,26 +46,31 @@ export default function ProductCard({ product }: { product: Product }) {
                 <div className="p-6">
                     {/* Бренд + Артикул */}
                     <div className="flex justify-between items-start mb-1">
-                        <span className="font-medium text-yellow-400">{product.brand}</span>
+ <span className="font-medium text-yellow-400 ">
+ {product.brand?.name || product.brand}
+ </span>
                         <span className="text-xs text-zinc-500 font-mono">
-                            Арт. {product.article}
-                        </span>
+ Арт. {product.article}
+ </span>
                     </div>
 
-                    <div className="text-xs text-zinc-500 mb-2">{product.category}</div>
+                    {/* Категория */}
+                    <div className="text-xs text-zinc-500 mb-2">
+                        {product.category?.name || product.category}
+                    </div>
 
                     <h3 className="font-semibold text-lg leading-tight mb-4 line-clamp-2 min-h-[3.2em]">
                         {product.name}
                     </h3>
 
                     <div className="flex items-center gap-2 mb-5">
-                        <span className="text-3xl font-bold text-yellow-400">
-                            {product.price.toLocaleString('ru')} ₽
-                        </span>
+ <span className="text-3xl font-bold text-yellow-400">
+ {product.price.toLocaleString('ru')} ₽
+ </span>
                         {product.oldPrice && (
                             <span className="text-sm line-through text-zinc-500">
-                                {product.oldPrice.toLocaleString('ru')} ₽
-                            </span>
+ {product.oldPrice.toLocaleString('ru')} ₽
+ </span>
                         )}
                     </div>
 
@@ -75,10 +80,10 @@ export default function ProductCard({ product }: { product: Product }) {
                 </div>
             </Link>
 
-            {/* ========== Блок с корзиной (с кнопкой или счётчиком) ========== */}
+            {/* Блок с корзиной */}
             <div className="px-6 pb-6 pt-2">
                 <CartQuantityControls
-                    product={product}
+                    product={ product}
                     className="mb-0"
                 />
             </div>

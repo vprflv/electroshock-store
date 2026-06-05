@@ -39,8 +39,8 @@ export const useSearchProducts = (searchTerm: string) => {
     return useQuery({
         queryKey: ['searchProducts', searchTerm],
         queryFn: () => searchProducts(searchTerm),
-        enabled: searchTerm.trim().length > 1,   // ищем только от 2 символов
-        staleTime: 2 * 60 * 1000,               // 2 минуты
+        enabled: searchTerm.trim().length > 1,
+        staleTime: 2 * 60 * 1000,
         gcTime: 5 * 60 * 1000,
     });
 };

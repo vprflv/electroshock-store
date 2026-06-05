@@ -1,61 +1,46 @@
-import { useState, useMemo, useEffect } from 'react';
+'use client';
+
+import { useState, useMemo } from 'react';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'new';
 
 type UseCatalogFiltersProps = {
     productsToShow: any[];
-    categories?: any[];
-    brands?: any[];
+    availableCategories?: any[];   // настоящие категории из БД
+    availableBrands?: any[];       // настоящие бренды из БД
 };
 
 export function useCatalogFilters({
                                       productsToShow,
-                                      categories = [],
-                                      brands = []
+                                      availableCategories = [],
+                                      availableBrands = [],
                                   }: UseCatalogFiltersProps) {
 
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+    const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+    const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
     const [inStockOnly, setInStockOnly] = useState(false);
     const [sortBy, setSortBy] = useState<SortOption>('popular');
-
-    // Доступные фильтры
-    const availableCategories = useMemo(() => {
-        if (categories.length > 0) return categories;
-        return Array.from(new Set(productsToShow.map(p => p.category)))
-            .filter(Boolean)
-            .map(name => ({ id: name, name }));
-    }, [productsToShow, categories]);
-
-    const availableBrands = useMemo(() => {
-        if (brands.length > 0) return brands;
-        return Array.from(new Set(productsToShow.map(p => p.brand)))
-            .filter(Boolean)
-            .map(name => ({ id: name, name }));
-    }, [productsToShow, brands]);
 
     // Основная фильтрация
     const filteredProducts = useMemo(() => {
         let result = [...productsToShow];
 
-        // Фильтр по категориям
-        if (selectedCategories.length > 0) {
-            result = result.filter(p => {
-                const catName = typeof p.category === 'object' ? p.category?.name : p.category;
-                return selectedCategories.includes(catName);
-            });
+        // Фильтр по категориям (по id)
+        if (selectedCategoryIds.length > 0) {
+            result = result.filter(p =>
+                p.category?.id && selectedCategoryIds.includes(p.category.id)
+            );
         }
 
-        // Фильтр по брендам
-        if (selectedBrands.length > 0) {
-            result = result.filter(p => {
-                const brandName = typeof p.brand === 'object' ? p.brand?.name : p.brand;
-                return selectedBrands.includes(brandName);
-            });
+        // Фильтр по брендам (по id)
+        if (selectedBrandIds.length > 0) {
+            result = result.filter(p =>
+                p.brand?.id && selectedBrandIds.includes(p.brand.id)
+            );
         }
 
-        // Цена
+        // Фильтр по цене
         result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
         // Только в наличии
@@ -81,21 +66,28 @@ export function useCatalogFilters({
         }
 
         return result;
-    }, [productsToShow, selectedCategories, selectedBrands, priceRange, inStockOnly, sortBy]);
+    }, [
+        productsToShow,
+        selectedCategoryIds,
+        selectedBrandIds,
+        priceRange,
+        inStockOnly,
+        sortBy
+    ]);
 
     const resetFilters = () => {
-        setSelectedCategories([]);
-        setSelectedBrands([]);
+        setSelectedCategoryIds([]);
+        setSelectedBrandIds([]);
         setPriceRange([0, 20000]);
         setInStockOnly(false);
         setSortBy('popular');
     };
 
     return {
-        selectedCategories,
-        setSelectedCategories,
-        selectedBrands,
-        setSelectedBrands,
+        selectedCategoryIds,
+        setSelectedCategoryIds,
+        selectedBrandIds,
+        setSelectedBrandIds,
         priceRange,
         setPriceRange,
         inStockOnly,

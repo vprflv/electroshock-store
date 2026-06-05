@@ -7,7 +7,7 @@ import {toPlain} from "@/lib/utils/toPlain";
 // Лёгкая версия для каталога (быстрая загрузка)
 export async function getAllLightProducts() {
     const products = await prisma.product.findMany({
-        where: { stock: { gt: 0 } }, // можно убрать, если хочешь показывать всё
+        where: { stock: { gt: 0 } },
         select: {
             id: true,
             article: true,
@@ -17,8 +17,8 @@ export async function getAllLightProducts() {
             stock: true,
             images: true,
             voltage: true,
-            categoryId: true,
-            brandId: true,
+            category: { select: { id: true, name: true, slug: true } },
+            brand:    { select: { id: true, name: true, slug: true } },
         },
         orderBy: { createdAt: 'desc' },
     });
