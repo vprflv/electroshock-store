@@ -30,9 +30,26 @@ export async function getAllLightProducts() {
 export async function getProductById(id: number) {
     const product = await prisma.product.findUnique({
         where: { id },
-        include: {
-            category: { select: { name: true, slug: true } },
-            brand: { select: { name: true, slug: true } },
+        select: {
+            id: true,
+            article: true,
+            name: true,
+            description: true,
+            price: true,
+            oldPrice: true,
+            stock: true,
+            images: true,
+            imagePaths: true,
+            voltage: true,
+            features: true,
+            specs: true,
+            createdAt: true,
+            category: {
+                select: { name: true, slug: true }
+            },
+            brand: {
+                select: { name: true, slug: true }
+            },
         },
     });
 

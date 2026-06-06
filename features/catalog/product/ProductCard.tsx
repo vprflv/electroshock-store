@@ -6,15 +6,30 @@ import { Zap } from 'lucide-react';
 import {useState} from "react";
 import {getProductImage} from "@/lib/utils/product-image";
 import CartQuantityControls from "@/components/CartQuantityControls";
+import {getProductById} from "@/features/actions/productActions";
+import {useQueryClient} from "@tanstack/react-query";
 
 export default function ProductCard({ product }: { product: any }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const queryClient = useQueryClient();
 
     const discount = product.oldPrice
         ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100 )
         : 0;
 
     const currentImage = getProductImage(product, currentImageIndex);
+
+
+
+    // const handlePrefetch = () => {
+    //     queryClient.prefetchQuery({
+    //         queryKey: ['product', product.id],
+    //         queryFn: () => getProductById(product.id),
+    //         staleTime: 1000 * 60 * 5,
+    //     });
+    // };
+
 
     return (
         <div className="group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">

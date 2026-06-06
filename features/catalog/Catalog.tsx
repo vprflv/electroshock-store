@@ -15,6 +15,7 @@ import ProductCard from "./product/ProductCard";
 import ProductCardSkeleton from "./product/ProductCardSkeleton";
 import { useCatalogFilters } from "./hooks/useCatalogFilters";
 import getPaginationPages from "@/lib/utils/pagination";
+import {usePrefetchProducts} from "@/features/catalog/hooks/usePrefetchProducts";
 
 type CatalogProps = {
     searchTerm: string;
@@ -57,12 +58,15 @@ export default function Catalog({ searchTerm }: CatalogProps) {
         availableBrands: brands,
     });
 
+
     const itemsPerPage = 9; // Увеличил с 3 до 9 (рекомендую 9–12)
 
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
         return filteredProducts.slice(start, start + itemsPerPage);
     }, [filteredProducts, currentPage, itemsPerPage]);
+
+    usePrefetchProducts(paginatedProducts);
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
