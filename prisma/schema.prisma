@@ -17,6 +17,7 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([slug])
   @@map("categories")
 }
 
@@ -29,6 +30,7 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([slug])
   @@map("brands")
 }
 
@@ -41,7 +43,6 @@ model Product {
   oldPrice    Int?
   stock       Int    @default(0)
 
-  // === Изменения здесь ===
   images     String[]
   imagePaths String[]
 
@@ -58,5 +59,23 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // ====================  ИНДЕКСЫ ====================
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([price])
+  @@index([stock])
+  @@index([createdAt])
+  @@index([article])
+  // составные индексы
+  @@index([categoryId, price])
+  @@index([brandId, price])
+  @@index([categoryId, brandId])
+  @@index([categoryId, stock])
+  @@index([brandId, stock])
+  @@index([price, stock])
+  // Для поиска
+  @@index([name])
+  @@index([name, article])
   @@map("products")
 }
