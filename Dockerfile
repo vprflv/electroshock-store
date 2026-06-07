@@ -8,7 +8,6 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 
-# Важно: включаем pnpm и разрешаем build-скрипты
 RUN corepack enable pnpm && \
     pnpm install --frozen-lockfile --ignore-scripts
 
@@ -16,19 +15,22 @@ RUN corepack enable pnpm && \
 FROM base AS builder
 WORKDIR /app
 
-# Копируем node_modules из deps
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN corepack enable pnpm && \
-    # Явно разрешаем build-скрипты (самый надёжный способ)
-    echo 'allowBuilds:' >> pnpm-workspace.yaml && \
-    echo '  "@prisma/client": true' >> pnpm-workspace.yaml && \
-    echo '  prisma: true' >> pnpm-workspace.yaml && \
-    echo '  "@prisma/engines": true' >> pnpm-workspace.yaml && \
-    echo '  sharp: true' >> pnpm-workspace.yaml && \
-    echo '  unrs-resolver: true' >> pnpm-workspace.yaml && \
     apk add --no-cache openssl && \
+    cat > pnpm-workspace.yaml << EOF
+packages:
+  - '.'
+
+allowBuilds:
+  "@prisma/client": true
+  prisma: true
+  "@prisma/engines": true
+  sharp: true
+  unrs-resolver: true
+EOF && \
     pnpm prisma generate && \
     pnpm build
 
@@ -47,7 +49,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Prisma Client (важно копировать сгенерированные файлы)
+# Prisma Client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
