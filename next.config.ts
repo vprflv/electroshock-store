@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
     output: 'standalone',
 
     images: {
@@ -11,7 +10,7 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: '**',
+                hostname: '**.picsum.photos',   // важно для поддоменов (cdn и т.д.)
             },
         ],
     },
