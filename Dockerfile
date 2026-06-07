@@ -1,25 +1,25 @@
 FROM node:20-alpine AS base
 
-# Установка зависимостей
+# === Dependencies stage ===
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
-# Сборка
+# === Builder stage ===
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Генерация Prisma
+# Генерация Prisma Client
 RUN corepack enable pnpm && pnpm prisma generate
 
-# Build
+# Сборка Next.js
 RUN pnpm build
 
-# Финальный образ
+# === Runner stage ===
 FROM base AS runner
 WORKDIR /app
 
@@ -28,12 +28,13 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Копируем нужные файлы
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Правильное копирование Prisma Client
+# Самое важное — Prisma Client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
