@@ -20,17 +20,7 @@ COPY . .
 
 RUN corepack enable pnpm && \
     apk add --no-cache openssl && \
-    cat > pnpm-workspace.yaml << EOF
-packages:
-  - '.'
-
-allowBuilds:
-  "@prisma/client": true
-  prisma: true
-  "@prisma/engines": true
-  sharp: true
-  unrs-resolver: true
-EOF && \
+    echo "dangerously-allow-all-builds=true" > .npmrc && \
     pnpm prisma generate && \
     pnpm build
 
