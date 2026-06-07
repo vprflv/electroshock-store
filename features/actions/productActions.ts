@@ -2,104 +2,116 @@
 
 import { prisma } from '@/lib/prisma';
 import {toPlain} from "@/lib/utils/toPlain";
+import {unstable_cache} from "next/cache";
 
 
 // Лёгкая версия для каталога (быстрая загрузка)
-export async function getAllLightProducts() {
-    const products = await prisma.product.findMany({
-        where: { stock: { gt: 0 } },
-        select: {
-            id: true,
-            article: true,
-            name: true,
-            price: true,
-            oldPrice: true,
-            stock: true,
-            images: true,
-            voltage: true,
-            category: { select: { id: true, name: true, slug: true } },
-            brand:    { select: { id: true, name: true, slug: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-    });
-
-    return toPlain(products);
-}
-
-
-export async function getProductById(id: number) {
-    const product = await prisma.product.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            article: true,
-            name: true,
-            description: true,
-            price: true,
-            oldPrice: true,
-            stock: true,
-            images: true,
-            imagePaths: true,
-            voltage: true,
-            features: true,
-            specs: true,
-            createdAt: true,
-            category: {
-                select: { name: true, slug: true }
+export const getAllLightProducts = unstable_cache(
+    async () => {
+        const products = await prisma.product.findMany({
+            where: { stock: { gt: 0 } },
+            select: {
+                id: true,
+                article: true,
+                name: true,
+                price: true,
+                oldPrice: true,
+                stock: true,
+                images: true,
+                voltage: true,
+                category: { select: { id: true, name: true, slug: true } },
+                brand:    { select: { id: true, name: true, slug: true } },
             },
-            brand: {
-                select: { name: true, slug: true }
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return toPlain(products);
+    },
+    ['all-light-products'],
+    {
+        revalidate: 300,
+        tags: ['products', 'catalog'],
+    }
+);
+
+
+// Кэшированная версия детального товара
+export const getProductById = unstable_cache(
+    async (id: number) => {
+        const product = await prisma.product.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                article: true,
+                name: true,
+                description: true,
+                price: true,
+                oldPrice: true,
+                stock: true,
+                images: true,
+                imagePaths: true,
+                voltage: true,
+                features: true,
+                specs: true,
+                createdAt: true,
+                category: {
+                    select: { name: true, slug: true }
+                },
+                brand: {
+                    select: { name: true, slug: true }
+                },
             },
-        },
-    });
+        });
 
-    if (!product) throw new Error('Товар не найден');
+        if (!product) throw new Error('Товар не найден');
 
-    return toPlain(product);
-}
+        return toPlain(product);
+    },
+    ['product', 'detail'],
+    {
+        revalidate: 600,
+        tags: ['product', 'products'],
+    }
+);
 
 // Для фильтров
-export async function getBrands() {
-    const brands = await prisma.brand.findMany({
-        select: { id: true, name: true, slug: true },
-        orderBy: { name: 'asc' },
-    });
-    return toPlain(brands);
-}
+export const getBrands = unstable_cache(
+    async () => {
+        const brands = await prisma.brand.findMany({
+            select: { id: true, name: true, slug: true },
+            orderBy: { name: 'asc' },
+        });
+        return toPlain(brands);
+    },
+    ['brands'],
+    {
+        revalidate: 3600,
+        tags: ['brands'],
+    }
+);
 
-export async function getCategories() {
-    const categories = await prisma.category.findMany({
-        select: { id: true, name: true, slug: true },
-        orderBy: { name: 'asc' },
-    });
-    return toPlain(categories);
-}
+export const getCategories = unstable_cache(
+    async () => {
+        const categories = await prisma.category.findMany({
+            select: { id: true, name: true, slug: true },
+            orderBy: { name: 'asc' },
+        });
+        return toPlain(categories);
+    },
+    ['categories'],
+    {
+        revalidate: 3600,
+        tags: ['categories'],
+    }
+);
 
-export async function searchProducts(query: string) {
-    if (!query?.trim()) return [];
+export const searchProducts = unstable_cache(
+    async (query: string) => {
+        if (!query?.trim()) return [];
 
-    const products = await prisma.product.findMany({
-        where: {
-            OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { article: { contains: query, mode: 'insensitive' } },
-            ],
-        },
-        select: {
-            id: true,
-            article: true,
-            name: true,
-            price: true,
-            oldPrice: true,
-            stock: true,
-            images: true,
-            voltage: true,
-            categoryId: true,
-            brandId: true,
-        },
-        take: 30,
-        orderBy: { createdAt: 'desc' },
-    });
 
-    return toPlain(products);
-}
+        return [];
+    },
+    ['search-placeholder'],
+    { revalidate: 3600 }
+);

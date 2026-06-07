@@ -34,16 +34,28 @@ export const useProduct = (id: number) => {
     });
 };
 
-// Поиск товаров
 export const useSearchProducts = (searchTerm: string) => {
+    const { data: allProducts = [] } = useAllLightProducts();
+
     return useQuery({
         queryKey: ['searchProducts', searchTerm],
-        queryFn: () => searchProducts(searchTerm),
+        queryFn: async () => {
+            if (!searchTerm?.trim()) return [];
+
+            const term = searchTerm.toLowerCase().trim();
+
+            return allProducts
+                .filter((p: any) =>
+                    p.name?.toLowerCase().includes(term) ||
+                    p.article?.toLowerCase().includes(term)
+                )
+                .slice(0, 30);
+        },
         enabled: searchTerm.trim().length > 1,
-        staleTime: 2 * 60 * 1000,
-        gcTime: 5 * 60 * 1000,
+        staleTime: 60 * 1000,
     });
 };
+
 
 // Для фильтров (категории и бренды)
 export const useCategories = () => {
