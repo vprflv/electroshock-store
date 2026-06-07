@@ -8,11 +8,19 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'picsum.photos',
             },
+
             {
                 protocol: 'https',
-                hostname: '**.picsum.photos',   // важно для поддоменов (cdn и т.д.)
+                hostname: '**.picsum.photos',
+            },
+            // Разрешаем любые домены (только для dev/prod если доверяешь источникам)
+            {
+                protocol: 'https',
+                hostname: '**',
             },
         ],
+        dangerouslyAllowSVG: true,
+        minimumCacheTTL: 60,
     },
 };
 
