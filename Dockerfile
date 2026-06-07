@@ -39,9 +39,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Prisma Client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# === Prisma Client — исправленный вариант ===
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/*/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/*/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 
