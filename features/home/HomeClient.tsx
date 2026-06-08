@@ -21,41 +21,92 @@ export default function HomeClient() {
     return (
         <div className="min-h-screen bg-zinc-950 text-white">
             {/* HERO */}
-            <header className="bg-gradient-to-br from-zinc-900 via-black to-zinc-950 py-24 border-b border-zinc-800">
+            <header className="py-24 ">
                 <div className="max-w-6xl mx-auto px-6 text-center">
                     <div className="flex justify-center mb-6">
-                        <Shield className="w-24 h-24 text-yellow-400" />
+                        <Shield className="w-24 h-24 text-yellow-400
+                   drop-shadow-[0_0_20px_#fcd34d]
+                   drop-shadow-[0_0_40px_#fcd34d]
+                   animate-pulse" />
                     </div>
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
                         Средства самозащиты
                     </h1>
-                    <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
+                    <p className="text-xl  text-yellow-400 max-w-2xl mx-auto">
                         Надёжные электрошокеры, перцовые баллончики и другое снаряжение для вашей безопасности
                     </p>
-                    <p className="mt-4 text-sm text-zinc-500">18+</p>
+                    <p className="mt-4 text-sm text-red-700">18+</p>
                 </div>
             </header>
 
-            {/* Навигация + Поиск */}
-            <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
+            {/* Навигация + Поиск — исправленная фиксация */}
+            <div className="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-950">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-8 text-sm font-medium">
-                            <Link href="/" className="hover:text-yellow-400 transition-colors">Каталог</Link>
-                            <Link href="#delivery" className="hover:text-yellow-400 transition-colors">Доставка</Link>
-                            <Link href="#guarantee" className="hover:text-yellow-400 transition-colors">Гарантия</Link>
-                            <Link href="#about" className="hover:text-yellow-400 transition-colors">О магазине</Link>
+                            <Link
+                                href="/"
+                                className="relative hover:text-yellow-400 transition-colors pb-1
+                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                   after:bg-yellow-400 after:w-0 hover:after:w-full
+                   after:transition-all after:duration-300"
+                            >
+                                Каталог
+                            </Link>
+
+                            <Link
+                                href="#delivery"
+                                className="relative hover:text-yellow-400 transition-colors pb-1
+                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                   after:bg-yellow-400 after:w-0 hover:after:w-full
+                   after:transition-all after:duration-300"
+                            >
+                                Доставка
+                            </Link>
+
+                            <Link
+                                href="#guarantee"
+                                className="relative hover:text-yellow-400 transition-colors pb-1
+                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                   after:bg-yellow-400 after:w-0 hover:after:w-full
+                   after:transition-all after:duration-300"
+                            >
+                                Гарантия
+                            </Link>
+
+                            {/*<Link
+        href="#about"
+        className="relative hover:text-yellow-400 transition-colors pb-1
+                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                   after:bg-yellow-400 after:w-0 hover:after:w-full
+                   after:transition-all after:duration-300"
+    >
+        О магазине
+    </Link>*/}
                         </div>
 
-                        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+                        <div className="flex-1 max-w-2xl mx-8">
+                            <SearchBar
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                                className="w-full"
+                            />
+                        </div>
 
                         <button
                             onClick={() => setIsCartOpen(true)}
-                            className="flex items-center gap-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-yellow-400 px-6 py-2.5 rounded-2xl transition-all group"
+                            className="relative p-3.5 rounded-2xl transition-all active:scale-95 group"
                         >
-                            <ShoppingCart className="w-5 h-5 group-hover:text-yellow-400 transition-colors" />
+                            <ShoppingCart className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
+
+                            {/* Неоновое свечение при наведении */}
+                            <div className="absolute inset-0 rounded-2xl bg-yellow-400/10 opacity-0
+                    group-hover:opacity-100 transition-all duration-300 -z-10 blur-md" />
+
                             {isMounted && totalItems() > 0 && (
-                                <div className="ml-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                                <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold
+                        w-6 h-6 rounded-full flex items-center justify-center
+                        shadow-lg ring-2 ring-red-500/30 border border-zinc-950">
                                     {totalItems()}
                                 </div>
                             )}

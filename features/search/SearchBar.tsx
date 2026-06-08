@@ -31,7 +31,7 @@ export default function SearchBar({
     return (
         <div className={`relative max-w-2xl mx-auto ${className}`}>
             <div className="relative">
-                <Search className="absolute left-5 top-4 text-zinc-500 w-5 h-5" />
+                <Search className="absolute left-5 top-4 text-zinc-500 w-6 h-6" />
 
                 <input
                     type="text"
@@ -41,9 +41,14 @@ export default function SearchBar({
                         onChange(e.target.value);
                     }}
                     placeholder={placeholder}
-                    className="w-full bg-zinc-900 border border-zinc-700 pl-14 pr-12 py-4 rounded-3xl
-                     text-lg focus:outline-none focus:border-yellow-400
-                     placeholder:text-zinc-500 transition-colors"
+                    className="w-full bg-zinc-950 pl-14 pr-12 py-4 rounded-3xl
+                               text-lg
+                               border border-zinc-950
+                               focus:border-yellow-200
+                               focus:ring-2 focus:ring-yellow-400/30
+                               placeholder:text-zinc-500
+                               transition-all duration-200
+                               outline-none"
                 />
 
                 {localValue && (

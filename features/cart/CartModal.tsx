@@ -4,7 +4,8 @@ import Image from 'next/image';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCart } from '@/store/useCart';
 import { useRouter } from "next/navigation";
-import { getMainImage } from '@/lib/utils/product-image';   // ← добавили
+import { getMainImage } from '@/lib/utils/product-image';
+import {getProductImage} from "@/lib/utils/product-image-store";   // ← добавили
 
 type CartModalProps = {
     isOpen: boolean;
@@ -24,7 +25,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                 <div className="flex items-center justify-between border-b border-zinc-800 px-8 py-6">
                     <h2 className="text-2xl font-semibold">Корзина</h2>
                     <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-6 h-6" />
+                        <X className="w-6 h-6 hover:text-yellow-400" />
                     </button>
                 </div>
 
@@ -44,7 +45,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                                 >
                                     <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
                                         <Image
-                                            src={getMainImage(item)}
+                                            src={getProductImage(item)}
                                             alt={item.name}
                                             fill
                                             className="object-cover"
