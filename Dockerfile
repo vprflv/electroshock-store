@@ -39,7 +39,9 @@ RUN apk add --no-cache openssl && \
     chown -R nextjs:nodejs .next && \
     chmod -R 755 .next
 
-COPY --from=builder /app/next.config.js ./
+# Копируем next.config.ts
+COPY --from=builder /app/next.config.ts ./
+
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
