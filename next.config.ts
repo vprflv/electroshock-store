@@ -13,12 +13,13 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: '**.picsum.photos',
             },
-            // Разрешаем любые домены (только для dev/prod если доверяешь источникам)
             {
                 protocol: 'https',
                 hostname: '**',
             },
         ],
+        unoptimized: true,
+        domains: ['picsum.photos'],
         dangerouslyAllowSVG: true,
         minimumCacheTTL: 60,
     },
