@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { getMainImage } from '@/lib/utils/product-image';
+import {getProductImage} from "@/lib/utils/product-image-store";
 
 type DeliveryType = 'courier' | 'pickup';
 type PaymentType = 'online' | 'cash';
@@ -36,17 +37,16 @@ export default function CheckoutPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Здесь будет реальная отправка заказа
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         alert('✅ Заказ успешно оформлен!');
         clearCart();
-        router.push('/'); // позже заменишь на страницу успеха
+        router.push('/');
     };
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center">
+            <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center px-4">
                 <h2 className="text-3xl font-semibold mb-4">Корзина пуста</h2>
                 <button
                     onClick={() => router.push('/')}
@@ -59,19 +59,19 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white pb-20">
-            <div className="max-w-6xl mx-auto px-6 pt-8">
+        <div className="min-h-screen bg-zinc-950 text-white pb-28"> {/* увеличил отступ снизу под плавающий блок */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center gap-2 text-zinc-400 hover:text-white mb-8"
+                    className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     Назад
                 </button>
 
-                <h1 className="text-4xl font-bold mb-10">Оформление заказа</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-8">Оформление заказа</h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10">
                     {/* Левая колонка — форма */}
                     <div className="lg:col-span-3">
                         <form onSubmit={handleSubmit} className="space-y-8">
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
                                         value={formData.fullName}
                                         onChange={handleChange}
                                         required
-                                        className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-yellow-400"
+                                        className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
                                     />
                                     <input
                                         type="tel"
@@ -94,16 +94,16 @@ export default function CheckoutPage() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         required
-                                        className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-yellow-400"
+                                        className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
                                     />
                                 </div>
                             </div>
 
-                            {/* Выбор доставки */}
+                            {/* Доставка */}
                             <div>
                                 <h2 className="text-2xl font-semibold mb-4">Доставка</h2>
                                 <div className="flex gap-4 mb-5">
-                                    <label className="flex items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-2xl px-6 py-4 cursor-pointer hover:border-yellow-400 transition-colors">
+                                    <label className="flex items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 cursor-pointer hover:border-yellow-400 transition-colors flex-1">
                                         <input
                                             type="checkbox"
                                             checked={deliveryNeeded}
@@ -115,18 +115,18 @@ export default function CheckoutPage() {
 
                                 {deliveryNeeded && (
                                     <div className="space-y-4">
-                                        <div className="flex gap-3">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => setDeliveryType('courier')}
-                                                className={`flex-1 py-4 rounded-2xl border transition-all ${deliveryType === 'courier' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
+                                                className={`py-4 rounded-2xl border transition-all text-base ${deliveryType === 'courier' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
                                             >
-                                                Курьер по городу
+                                                Курьер
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setDeliveryType('pickup')}
-                                                className={`flex-1 py-4 rounded-2xl border transition-all ${deliveryType === 'pickup' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
+                                                className={`py-4 rounded-2xl border transition-all text-base ${deliveryType === 'pickup' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
                                             >
                                                 Самовывоз
                                             </button>
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
                                                 value={formData.address}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-yellow-400"
+                                                className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
                                             />
                                         )}
                                     </div>
@@ -150,11 +150,11 @@ export default function CheckoutPage() {
                             {/* Способ оплаты */}
                             <div>
                                 <h2 className="text-2xl font-semibold mb-4">Способ оплаты</h2>
-                                <div className="flex gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
                                         onClick={() => setPaymentType('online')}
-                                        className={`flex-1 py-4 rounded-2xl border transition-all ${paymentType === 'online' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
+                                        className={`py-4 rounded-2xl border transition-all text-base ${paymentType === 'online' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
                                     >
                                         Оплата онлайн
                                     </button>
@@ -162,9 +162,9 @@ export default function CheckoutPage() {
                                         <button
                                             type="button"
                                             onClick={() => setPaymentType('cash')}
-                                            className={`flex-1 py-4 rounded-2xl border transition-all ${paymentType === 'cash' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
+                                            className={`py-4 rounded-2xl border transition-all text-base ${paymentType === 'cash' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
                                         >
-                                            Оплата при получении
+                                            При получении
                                         </button>
                                     )}
                                 </div>
@@ -179,14 +179,15 @@ export default function CheckoutPage() {
                                     value={formData.comment}
                                     onChange={handleChange}
                                     rows={4}
-                                    className="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-6 py-4 focus:outline-none focus:border-yellow-400"
+                                    className="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
                                 />
                             </div>
 
+                            {/* Кнопка для десктопа */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 text-black font-semibold text-xl py-5 rounded-3xl transition-colors mt-6"
+                                className="hidden lg:block w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 text-black font-semibold text-xl py-5 rounded-3xl transition-colors"
                             >
                                 {isSubmitting
                                     ? 'Оформляем заказ...'
@@ -197,15 +198,15 @@ export default function CheckoutPage() {
 
                     {/* Правая колонка — состав заказа */}
                     <div className="lg:col-span-2">
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 sticky top-8">
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 lg:p-8 lg:sticky lg:top-8">
                             <h3 className="text-xl font-semibold mb-6">Ваш заказ</h3>
 
-                            <div className="space-y-6 max-h-[520px] overflow-auto pr-2">
+                            <div className="space-y-6 max-h-[460px] overflow-auto pr-2">
                                 {items.map((item) => (
                                     <div key={item.id} className="flex gap-4">
                                         <div className="relative w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
                                             <Image
-                                                src={getMainImage(item)}
+                                                src={getProductImage(item)}
                                                 alt={item.name}
                                                 fill
                                                 className="object-cover"
@@ -238,6 +239,24 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Плавающий блок "Итого + кнопка" только для мобильных */}
+            <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-zinc-950 border-t border-zinc-800 p-4 z-50 shadow-2xl">
+                <div className="flex justify-between items-center mb-4">
+                    <span className="text-lg font-semibold">Итого:</span>
+                    <span className="text-2xl font-bold text-yellow-400">
+                        {totalPrice().toLocaleString('ru')} ₽
+                    </span>
+                </div>
+
+                <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 text-black font-semibold text-lg py-4 rounded-2xl transition-colors"
+                >
+                    {isSubmitting ? 'Оформляем заказ...' : 'Подтвердить заказ'}
+                </button>
             </div>
         </div>
     );

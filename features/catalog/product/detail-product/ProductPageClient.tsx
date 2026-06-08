@@ -24,7 +24,7 @@ export default function ProductPageClient({ id }: { id: number }) {
     if (isLoading || !product) {
         return(<div className="min-h-screen bg-zinc-950 flex items-center justify-center">
             <ProductDetailSkeleton />
-            </div>)
+        </div>)
 
 
 
