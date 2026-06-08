@@ -1,4 +1,3 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
 
@@ -8,20 +7,20 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'picsum.photos',
             },
-
             {
                 protocol: 'https',
-                hostname: '**.picsum.photos',
+                hostname: '*.picsum.photos',
             },
             {
                 protocol: 'https',
-                hostname: '**',
+                hostname: 'wxbhvhqqtimovksbulxd.supabase.co',
+            },
+            {
+                protocol: 'https',
+                hostname: '*.supabase.co',
             },
         ],
-        unoptimized: true,
-        domains: ['picsum.photos'],
-        dangerouslyAllowSVG: true,
-        minimumCacheTTL: 60,
+        unoptimized: false,   // можно попробовать false
     },
 };
 

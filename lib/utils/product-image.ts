@@ -6,7 +6,7 @@ import { type Product } from '@/lib/mock-products';
  */
 export function getMainImage(product: Product): string {
     if (!product.images || product.images.length === 0) {
-        return '/placeholder.jpg'; // ← положи заглушку в public/
+        return '/placeholder.jpg';
     }
     return product.images[0];
 }

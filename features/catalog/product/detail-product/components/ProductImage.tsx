@@ -4,13 +4,19 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { type Product } from '@/lib/mock-products';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import {getProductImage} from "@/lib/utils/product-image-store";
+import {useQueryClient} from "@tanstack/react-query";
 
 export default function ProductImage({ product }: { product: Product }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isZoomed, setIsZoomed] = useState(false);
 
+    console.log("ProductCard received:", product.article, product.imagePaths);
     const images = product.images;
-    const currentImage = images[currentIndex];
+    const currentImage = getProductImage(product, currentIndex);
+
+
+    // const currentImage = images[currentIndex];
 
     const discount = product.oldPrice
         ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
@@ -30,6 +36,7 @@ export default function ProductImage({ product }: { product: Product }) {
                     src={currentImage}
                     alt={product.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover transition-all duration-500 group-hover:scale-105"
                     priority
                 />
@@ -85,6 +92,7 @@ export default function ProductImage({ product }: { product: Product }) {
                                 src={img}
                                 alt={`${product.name} ${index + 1}`}
                                 fill
+                                sizes="80px"
                                 className="object-cover"
                             />
                         </button>

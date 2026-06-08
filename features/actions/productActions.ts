@@ -18,6 +18,7 @@ export const getAllLightProducts = unstable_cache(
                 oldPrice: true,
                 stock: true,
                 images: true,
+                imagePaths: true,
                 voltage: true,
                 category: { select: { id: true, name: true, slug: true } },
                 brand:    { select: { id: true, name: true, slug: true } },

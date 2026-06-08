@@ -1,12 +1,22 @@
 import { type Product } from '@/lib/mock-products';
 
 export default function ProductInfo({ product }: { product: Product }) {
+
+    const brandName = typeof product.brand === 'object' && product.brand !== null
+        ? product.brand.name
+        : product.brand || '';
+
+    const categoryName = typeof product.category === 'object' && product.category !== null
+        ? product.category.name
+        : product.category || '';
+
+
     return (
         <>
             <div className="flex items-center gap-3 mb-2">
-                <span className="text-yellow-400 font-semibold">{product.brand}</span>
+                <span className="text-yellow-400 font-semibold">{brandName}</span>
                 <span className="text-zinc-500">•</span>
-                <span className="text-zinc-500">{product.category}</span>
+                <span className="text-zinc-500">{categoryName}</span>
             </div>
 
             <h1 className="text-4xl font-bold leading-tight mb-6">{product.name}</h1>
