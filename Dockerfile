@@ -1,6 +1,5 @@
-FROM node:22-alpine
+FROM node:22-alpine AS deps
 
-# === Dependencies ===
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
@@ -10,7 +9,13 @@ COPY prisma ./prisma
 RUN corepack enable pnpm && \
     pnpm install --frozen-lockfile --ignore-scripts
 
-# === Build ===
+# ========================
+
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN corepack enable pnpm && \
@@ -19,7 +24,12 @@ RUN corepack enable pnpm && \
     pnpm prisma generate && \
     pnpm build
 
-# === Runner ===
+# ========================
+
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
 ENV NODE_ENV=production
 
 RUN apk add --no-cache openssl && \
@@ -29,16 +39,15 @@ RUN apk add --no-cache openssl && \
     chown -R nextjs:nodejs .next && \
     chmod -R 755 .next
 
-# Копируем только нужное
-COPY --from=0 /app/public ./public
-COPY --from=0 /app/.next/standalone ./
-COPY --from=0 /app/.next/static ./.next/static
-COPY --from=0 /app/prisma ./prisma
-COPY --from=0 /app/next.config.js ./
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
 
 # Prisma Client
-COPY --from=0 /app/node_modules/.pnpm/@prisma+client*/*/node_modules/.prisma ./node_modules/.prisma
-COPY --from=0 /app/node_modules/.pnpm/@prisma+client*/*/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/*/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/*/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 
