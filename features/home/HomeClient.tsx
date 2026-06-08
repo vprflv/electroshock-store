@@ -39,17 +39,19 @@ export default function HomeClient() {
                 </div>
             </header>
 
-            {/* Навигация + Поиск — исправленная фиксация */}
+            {/* Навигация + Поиск */}
             <div className="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-950">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center justify-between h-16">   {/* фиксированная высота */}
+
+                        {/* Ссылки */}
                         <div className="flex items-center gap-8 text-sm font-medium">
                             <Link
                                 href="/"
                                 className="relative hover:text-yellow-400 transition-colors pb-1
-                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
-                   after:bg-yellow-400 after:w-0 hover:after:w-full
-                   after:transition-all after:duration-300"
+                               after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                               after:bg-yellow-400 after:w-0 hover:after:w-full
+                               after:transition-all after:duration-300"
                             >
                                 Каталог
                             </Link>
@@ -57,9 +59,9 @@ export default function HomeClient() {
                             <Link
                                 href="#delivery"
                                 className="relative hover:text-yellow-400 transition-colors pb-1
-                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
-                   after:bg-yellow-400 after:w-0 hover:after:w-full
-                   after:transition-all after:duration-300"
+                               after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                               after:bg-yellow-400 after:w-0 hover:after:w-full
+                               after:transition-all after:duration-300"
                             >
                                 Доставка
                             </Link>
@@ -67,24 +69,15 @@ export default function HomeClient() {
                             <Link
                                 href="#guarantee"
                                 className="relative hover:text-yellow-400 transition-colors pb-1
-                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
-                   after:bg-yellow-400 after:w-0 hover:after:w-full
-                   after:transition-all after:duration-300"
+                               after:absolute after:bottom-0 after:left-0 after:h-[2px]
+                               after:bg-yellow-400 after:w-0 hover:after:w-full
+                               after:transition-all after:duration-300"
                             >
                                 Гарантия
                             </Link>
-
-                            {/*<Link
-        href="#about"
-        className="relative hover:text-yellow-400 transition-colors pb-1
-                   after:absolute after:bottom-0 after:left-0 after:h-[2px]
-                   after:bg-yellow-400 after:w-0 hover:after:w-full
-                   after:transition-all after:duration-300"
-    >
-        О магазине
-    </Link>*/}
                         </div>
 
+                        {/* Поиск */}
                         <div className="flex-1 max-w-2xl mx-8">
                             <SearchBar
                                 value={searchTerm}
@@ -93,20 +86,21 @@ export default function HomeClient() {
                             />
                         </div>
 
+                        {/* Корзина */}
                         <button
                             onClick={() => setIsCartOpen(true)}
                             className="relative p-3.5 rounded-2xl transition-all active:scale-95 group"
                         >
                             <ShoppingCart className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
 
-                            {/* Неоновое свечение при наведении */}
+                            {/* Неоновое свечение */}
                             <div className="absolute inset-0 rounded-2xl bg-yellow-400/10 opacity-0
-                    group-hover:opacity-100 transition-all duration-300 -z-10 blur-md" />
+                                group-hover:opacity-100 transition-all duration-300 -z-10 blur-md" />
 
                             {isMounted && totalItems() > 0 && (
                                 <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold
-                        w-6 h-6 rounded-full flex items-center justify-center
-                        shadow-lg ring-2 ring-red-500/30 border border-zinc-950">
+                                    w-6 h-6 rounded-full flex items-center justify-center
+                                    shadow-lg ring-2 ring-red-500/30 border border-zinc-950">
                                     {totalItems()}
                                 </div>
                             )}

@@ -1,6 +1,13 @@
 'use client';
 
 import { X } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'new';
 
 
@@ -54,30 +61,33 @@ export default function Filters({
                 <h3 className="font-semibold text-lg">Фильтры</h3>
                 <button
                     onClick={onReset}
-                    className="text-sm text-zinc-400 hover:text-white flex items-center gap-1"
+                    className="text-sm text-zinc-400 hover:text-yellow-400 flex items-center gap-1"
                 >
-                    <X className="w-4 h-4" /> Сбросить
+                    <X className="w-4 h-4 "  /> Сбросить
                 </button>
             </div>
 
             {/* Сортировка */}
             <div className="mb-6">
-                <p className="text-sm text-zinc-400 mb-2">Сортировать</p>
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-white"
-                >
-                    <option value="popular">По популярности</option>
-                    <option value="price-asc">Цена: по возрастанию</option>
-                    <option value="price-desc">Цена: по убыванию</option>
-                    <option value="new">Новинки</option>
-                </select>
+                <p className="text-sm text-yellow-400 mb-2">Сортировать</p>
+
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Выберите сортировку" />
+                    </SelectTrigger>
+
+                    <SelectContent className="w-full min-w-[270px] max-w-[360px]">
+                        <SelectItem value="popular">По популярности</SelectItem>
+                        <SelectItem value="price-asc">Цена: по возрастанию</SelectItem>
+                        <SelectItem value="price-desc">Цена: по убыванию</SelectItem>
+                        <SelectItem value="new">Новинки</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             {/* Категории */}
             <div className="mb-6">
-                <p className="text-sm text-zinc-400 mb-3">Категория</p>
+                <p className="text-sm text-yellow-400 mb-3">Категория</p>
                 {availableCategories.map((cat) => (
                     <label
                         key={cat.id}                    // ← теперь надёжно
@@ -104,7 +114,7 @@ export default function Filters({
 
             {/* Бренды */}
             <div className="mb-6">
-                <p className="text-sm text-zinc-400 mb-3">Бренд</p>
+                <p className="text-sm text-yellow-400 mb-3">Бренд</p>
                 {availableBrands.map((brand) => (
                     <label
                         key={brand.id}
@@ -131,21 +141,35 @@ export default function Filters({
 
             {/* Цена */}
             <div className="mb-6">
-                <p className="text-sm text-zinc-400 mb-3">Цена, ₽</p>
+                <p className="text-sm text-yellow-400 mb-3">Цена, ₽</p>
                 <div className="flex gap-3 items-center">
                     <input
-                        type="number"
-                        value={priceRange[0]}
-                        onChange={(e) => setPriceRange([+e.target.value || 0, priceRange[1]])}
-                        className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 w-full"
+                        type="text"                    // ← изменили
+                        value={priceRange[0] === 0 ? '' : priceRange[0]}   // ← важно
+                        onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : +e.target.value;
+                            setPriceRange([val, priceRange[1]]);
+                        }}
+                        className="bg-zinc-800 border border-yellow-400 rounded-xl px-4 py-3 w-full
+                       focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400
+                       [appearance:textfield]
+                       [&::-webkit-outer-spin-button]:appearance-none
+                       [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="от"
                     />
-                    <span className="text-zinc-500">-</span>
+                    <span className="text-zinc-500 font-medium">-</span>
                     <input
-                        type="number"
-                        value={priceRange[1]}
-                        onChange={(e) => setPriceRange([priceRange[0], +e.target.value || 20000])}
-                        className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 w-full"
+                        type="text"                    // ← изменили
+                        value={priceRange[1] === 20000 ? '' : priceRange[1]}
+                        onChange={(e) => {
+                            const val = e.target.value === '' ? 20000 : +e.target.value;
+                            setPriceRange([priceRange[0], val]);
+                        }}
+                        className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 w-full
+                       focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400
+                       [appearance:textfield]
+                       [&::-webkit-outer-spin-button]:appearance-none
+                       [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="до"
                     />
                 </div>
