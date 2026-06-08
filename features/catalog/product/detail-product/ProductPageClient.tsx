@@ -67,9 +67,10 @@ export default function ProductPageClient({ id }: { id: number }) {
                     <ProductImage product={normalizedProduct} />
                     <div className="flex flex-col">
                         <ProductInfo product={normalizedProduct} />
-                        <ProductCartSection product={normalizedProduct} onOpenCart={() => setIsCartOpen(true)} />
-                        <ProductDescription product={normalizedProduct} />
                         <ProductSpecs product={normalizedProduct} />
+                        <ProductDescription product={normalizedProduct} />
+                        <ProductCartSection product={normalizedProduct} onOpenCart={() => setIsCartOpen(true)} />
+
                         <ProductFeatures product={normalizedProduct} />
                     </div>
                 </div>

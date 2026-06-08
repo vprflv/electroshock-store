@@ -33,7 +33,7 @@ export default function ProductInfo({ product }: { product: Product }) {
             </div>
 
             <div className="flex items-center gap-3 text-emerald-400 mb-10">
-                {product.stock > 5 ? '✅ В наличии' : '⚠ Осталось мало'}
+                {product.stock > 5 ? ' В наличии' : '⚠ Осталось мало'}
                 <span className="text-zinc-500">• {product.stock} шт.</span>
             </div>
         </>

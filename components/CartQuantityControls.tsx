@@ -33,8 +33,8 @@ export default function CartQuantityControls({
         return (
             <button
                 onClick={handleAdd}
-                className={`w-full bg-white hover:bg-yellow-400 active:bg-yellow-500 
-                    text-black font-semibold py-4 rounded-3xl 
+                className={`w-full mt-5 bg-white hover:bg-yellow-400 hover:text-white active:bg-yellow-500 
+                    text-black font-semibold py-4 rounded-4xl 
                     flex items-center justify-center gap-3 transition-all text-base ${className}`}
             >
                 <ShoppingCart className="w-5 h-5" />
@@ -46,23 +46,24 @@ export default function CartQuantityControls({
     // Компактный счётчик
     return (
         <div className={`w-full ${className}`}>
-            <div className="flex items-center justify-center gap-6 bg-zinc-900 border border-zinc-700 rounded-3xl py-3"> {/* py-3 — комфортная высота */}
+            <div className="flex items-center justify-center gap-4 bg-zinc-900 border border-zinc-700 rounded-4xl py-2.5 px-2">
+
                 <button
                     onClick={handleDecrease}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 rounded-2xl transition-colors active:scale-90"
+                    className="w-9 h-9 flex items-center justify-center hover:bg-zinc-800 rounded-xl transition-colors active:scale-90"
                 >
-                    <Minus className="w-5 h-5" />
+                    <Minus className="w-4 h-4" />
                 </button>
 
-                <span className="text-xl font-semibold w-12 text-center">
-                    {cartItem.quantity}
-                </span>
+                <span className="text-lg text-yellow-400 font-semibold w-10 text-center tabular-nums">
+                {cartItem.quantity}
+            </span>
 
                 <button
                     onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 rounded-2xl transition-colors active:scale-90"
+                    className="w-9 h-9 flex items-center justify-center hover:bg-zinc-800 rounded-xl transition-colors active:scale-90"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                 </button>
             </div>
         </div>

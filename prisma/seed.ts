@@ -1,5 +1,5 @@
 // import { prisma } from '@/lib/prisma';
-// import { mockProducts } from '@/lib/mock-products'; // ← твой текущий файл
+// import { mockProducts } from '@/lib/mock-products';
 //
 // async function main() {
 //     console.log('🌱 Начинаем сидирование базы данных...');
@@ -12,25 +12,29 @@
 //     console.log('🗑️ Старые данные удалены');
 //
 //     // === 1. Создаём уникальные категории ===
-//     const uniqueCategories = [...new Set(mockProducts.map(p => p.category))];
+//     const uniqueCategories = [...new Set(mockProducts.map(p => p.category?.name).filter(Boolean))];
 //
 //     for (const name of uniqueCategories) {
 //         await prisma.category.create({
 //             data: {
 //                 name,
-//                 slug: name.toLowerCase().replace(/[^a-zа-я0-9]+/g, '-').replace(/^-|-$/g, ''),
+//                 slug: name.toLowerCase()
+//                     .replace(/[^a-zа-я0-9]+/g, '-')
+//                     .replace(/^-|-$/g, ''),
 //             },
 //         });
 //     }
 //
 //     // === 2. Создаём уникальные бренды ===
-//     const uniqueBrands = [...new Set(mockProducts.map(p => p.brand))];
+//     const uniqueBrands = [...new Set(mockProducts.map(p => p.brand?.name).filter(Boolean))];
 //
 //     for (const name of uniqueBrands) {
 //         await prisma.brand.create({
 //             data: {
 //                 name,
-//                 slug: name.toLowerCase().replace(/[^a-zа-я0-9]+/g, '-').replace(/^-|-$/g, ''),
+//                 slug: name.toLowerCase()
+//                     .replace(/[^a-zа-я0-9]+/g, '-')
+//                     .replace(/^-|-$/g, ''),
 //             },
 //         });
 //     }
@@ -42,16 +46,21 @@
 //
 //     for (const product of mockProducts) {
 //         try {
+//             if (!product.category?.name || !product.brand?.name) {
+//                 console.warn(`⚠️ Пропущен товар: ${product.name} (нет бренда или категории)`);
+//                 continue;
+//             }
+//
 //             const category = await prisma.category.findUnique({
-//                 where: { name: product.category }
+//                 where: { name: product.category.name }
 //             });
 //
 //             const brand = await prisma.brand.findUnique({
-//                 where: { name: product.brand }
+//                 where: { name: product.brand.name }
 //             });
 //
 //             if (!category || !brand) {
-//                 console.warn(`⚠️ Пропущен товар: ${product.name} (нет категории или бренда)`);
+//                 console.warn(`⚠️ Пропущен товар: ${product.name} (не найдена категория или бренд)`);
 //                 continue;
 //             }
 //
@@ -63,8 +72,8 @@
 //                     price: product.price,
 //                     oldPrice: product.oldPrice,
 //                     stock: product.stock,
-//                     images: product.images,
-//                     imagePaths: [],
+//                     images: product.images || [],
+//                     imagePaths: product.imagePaths || [],
 //                     voltage: product.voltage,
 //                     features: product.features || [],
 //                     specs: product.specs || {},

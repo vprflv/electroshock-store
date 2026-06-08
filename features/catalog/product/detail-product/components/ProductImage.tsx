@@ -62,7 +62,7 @@ export default function ProductImage({ product }: { product: any }) {
 
             {/* Миниатюры — новая версия */}
             {imagesCount > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+                <div className="flex gap-3 overflow-x-auto pb-4 pl-5 pt-5 snap-x snap-mandatory scrollbar-hide">
                     {Array.from({ length: imagesCount }).map((_, index) => {
                         const thumbSrc = getProductImage(product, index);
                         const isActive = index === currentIndex;
@@ -73,7 +73,7 @@ export default function ProductImage({ product }: { product: any }) {
                                 onClick={() => setCurrentIndex(index)}
                                 className={`relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 snap-start
                                     ${isActive
-                                    ? 'border-yellow-400 scale-110 shadow-xl shadow-yellow-500/30'
+                                    ? 'border-yellow-400 scale-110 shadow-md shadow-yellow-500/30'
                                     : 'border-zinc-700 hover:border-zinc-400 hover:scale-105'
                                 }`}
                             >

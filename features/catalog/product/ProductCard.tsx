@@ -18,7 +18,6 @@ export default function ProductCard({ product }: { product: Product }) {
 
     const currentImage = getProductImage(product, currentImageIndex);
 
-    // Безопасное получение бренда и категории
     const brandName = typeof product.brand === 'string'
         ? product.brand
         : product.brand?.name || '';
@@ -28,10 +27,11 @@ export default function ProductCard({ product }: { product: Product }) {
         : product.category?.name || '';
 
     return (
-        <div className="group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">
+        <div className="group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-yellow-500 transition-all duration-300 flex flex-col h-full">
 
-            <Link href={`/product/${product.id}`} className="block">
-                <div className="relative h-64 bg-zinc-950 overflow-hidden">
+            <Link href={`/product/${product.id}`} className="block flex-1">
+                {/* Изображение — сделали ниже */}
+                <div className="relative h-52 bg-zinc-950 overflow-hidden">
                     <Image
                         src={currentImage}
                         alt={product.name}
@@ -54,7 +54,7 @@ export default function ProductCard({ product }: { product: Product }) {
                     )}
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-1">
                         <span className="font-medium text-yellow-400">
                             {brandName}
@@ -68,11 +68,11 @@ export default function ProductCard({ product }: { product: Product }) {
                         {categoryName}
                     </div>
 
-                    <h3 className="font-semibold text-lg leading-tight mb-4 line-clamp-2 min-h-[3.2em]">
+                    <h3 className="font-semibold text-lg leading-tight mb-4 line-clamp-2 flex-1">
                         {product.name}
                     </h3>
 
-                    <div className="flex items-center gap-2 mb-5">
+                    <div className="flex items-center gap-2 mt-auto">
                         <span className="text-3xl font-bold text-yellow-400">
                             {product.price.toLocaleString('ru')} ₽
                         </span>
@@ -82,14 +82,10 @@ export default function ProductCard({ product }: { product: Product }) {
                             </span>
                         )}
                     </div>
-
-                    <div className="flex gap-2 text-sm text-emerald-400 mb-6">
-                        {product.stock > 10 ? '✅ В наличии' : '⚠ Осталось мало'}
-                    </div>
                 </div>
             </Link>
 
-            <div className="px-6 pb-6 pt-2">
+            <div className="px-6 pb-6 pt-2 border-t border-zinc-800">
                 <CartQuantityControls product={product} className="mb-0" />
             </div>
         </div>
