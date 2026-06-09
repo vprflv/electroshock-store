@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { getMainImage } from '@/lib/utils/product-image';
 import {getProductImage} from "@/lib/utils/product-image-store";
 
 type DeliveryType = 'courier' | 'pickup';

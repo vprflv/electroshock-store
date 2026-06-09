@@ -28,7 +28,7 @@ export default function SearchBar({
     };
 
     return (
-        <div className={`relative w-full max-w-3xl mx-auto ${className}`}>
+        <div className={`relative w-full max-w-2xl mx-auto ${className}`}>
             <div className="relative">
                 {/* Иконка поиска */}
                 <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5 sm:w-6 sm:h-6 transition-all" />

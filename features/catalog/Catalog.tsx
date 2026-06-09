@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import {
@@ -15,13 +15,15 @@ import ProductCard from "./product/ProductCard";
 import ProductCardSkeleton from "./product/ProductCardSkeleton";
 import { useCatalogFilters } from "./hooks/useCatalogFilters";
 import getPaginationPages from "@/lib/utils/pagination";
-import {usePrefetchProducts} from "@/features/catalog/hooks/usePrefetchProducts";
+import { usePrefetchProducts } from "@/features/catalog/hooks/usePrefetchProducts";
+import SearchBar from "@/features/search/SearchBar";   // ← добавили импорт
 
 type CatalogProps = {
     searchTerm: string;
+    onSearchChange: (value: string) => void;   // ← добавили
 };
 
-export default function Catalog({ searchTerm }: CatalogProps) {
+export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -36,7 +38,6 @@ export default function Catalog({ searchTerm }: CatalogProps) {
 
     const productsAfterSearch = searchTerm.trim() ? searchedProducts : allProducts;
 
-    // Основные фильтры
     const {
         selectedCategoryIds,
         setSelectedCategoryIds,
@@ -53,13 +54,12 @@ export default function Catalog({ searchTerm }: CatalogProps) {
         availableCategories,
         availableBrands,
     } = useCatalogFilters({
-        productsToShow: productsAfterSearch,        // ← важно: после поиска
+        productsToShow: productsAfterSearch,
         availableCategories: categories,
         availableBrands: brands,
     });
 
-
-    const itemsPerPage = 9; // Увеличил с 3 до 9 (рекомендую 9–12)
+    const itemsPerPage = 9;
 
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
@@ -71,16 +71,29 @@ export default function Catalog({ searchTerm }: CatalogProps) {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     const goToPage = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+
         const newParams = new URLSearchParams(searchParams.toString());
+
         if (page === 1) {
             newParams.delete('page');
         } else {
             newParams.set('page', page.toString());
         }
+
         router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
     };
 
-    // Автосброс страницы при изменении фильтров
+    // Автосброс страницы
+    const prevFiltersRef = useRef({
+        categories: 0,
+        brands: 0,
+        inStock: false,
+        search: '',
+        price: [0, 20000],
+        sort: 'popular'
+    });
+
     useEffect(() => {
         const hasActiveFilters =
             selectedCategoryIds.length > 0 ||
@@ -91,11 +104,29 @@ export default function Catalog({ searchTerm }: CatalogProps) {
             priceRange[1] !== 20000 ||
             sortBy !== 'popular';
 
-        if (hasActiveFilters && currentPage !== 1) {
+        const filtersChanged =
+            selectedCategoryIds.length !== prevFiltersRef.current.categories ||
+            selectedBrandIds.length !== prevFiltersRef.current.brands ||
+            inStockOnly !== prevFiltersRef.current.inStock ||
+            searchTerm.trim() !== prevFiltersRef.current.search ||
+            priceRange[0] !== prevFiltersRef.current.price[0] ||
+            priceRange[1] !== prevFiltersRef.current.price[1] ||
+            sortBy !== prevFiltersRef.current.sort;
+
+        if (hasActiveFilters && filtersChanged && currentPage !== 1) {
             const newParams = new URLSearchParams(searchParams);
             newParams.delete('page');
             router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
         }
+
+        prevFiltersRef.current = {
+            categories: selectedCategoryIds.length,
+            brands: selectedBrandIds.length,
+            inStock: inStockOnly,
+            search: searchTerm.trim(),
+            price: [...priceRange],
+            sort: sortBy
+        };
     }, [
         selectedCategoryIds.length,
         selectedBrandIds.length,
@@ -112,6 +143,7 @@ export default function Catalog({ searchTerm }: CatalogProps) {
     return (
         <div className="max-w-7xl mx-auto px-6 py-10">
             <div className="flex flex-col lg:flex-row gap-10">
+
                 {/* Фильтры */}
                 <div className="lg:w-80 flex-shrink-0">
                     <Filters
@@ -133,16 +165,28 @@ export default function Catalog({ searchTerm }: CatalogProps) {
 
                 {/* Основная область каталога */}
                 <div className="flex-1">
+                    {/* Поиск — добавили сюда */}
+                    <div className="mb-8">
+                        <SearchBar
+                            value={searchTerm}
+                            onChange={onSearchChange}
+                            className="w-full max-w-2xl mx-auto"
+                        />
+                    </div>
+
+                    {/* Заголовок + статистика */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                         <h2 className="text-4xl font-semibold">Каталог товаров</h2>
                         <p className="text-zinc-400">
                             Показано: <span className="text-white font-medium">
-                                {productsLoading ? '—' : paginatedProducts.length}
-                            </span> из {filteredProducts.length}
+            {productsLoading
+                ? '—'
+                : Math.min(currentPage * itemsPerPage, filteredProducts.length)
+            }
+        </span> из {filteredProducts.length}
                         </p>
                     </div>
 
-                    {/* Сетка товаров / Скелетоны */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {productsLoading ? (
                             Array.from({ length: 6 }).map((_, index) => (
@@ -194,7 +238,6 @@ export default function Catalog({ searchTerm }: CatalogProps) {
                         </div>
                     )}
 
-                    {/* Сообщение о пустом результате */}
                     {!productsLoading && filteredProducts.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-2xl text-zinc-400 mb-2">Ничего не найдено 😔</p>

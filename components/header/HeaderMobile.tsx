@@ -5,16 +5,12 @@ import { Shield, ShoppingCart } from 'lucide-react';
 import SearchBar from "@/features/search/SearchBar";
 
 interface HeaderMobileProps {
-    searchTerm: string;
-    onSearchChange: (value: string) => void;
     onCartClick: () => void;
     totalItems: number;
     isMounted: boolean;
 }
 
 export default function HeaderMobile({
-                                         searchTerm,
-                                         onSearchChange,
                                          onCartClick,
                                          totalItems,
                                          isMounted,
@@ -49,10 +45,6 @@ export default function HeaderMobile({
                 </button>
             </div>
 
-            {/* Поиск на мобильных */}
-            <div className="pb-4">
-                <SearchBar value={searchTerm} onChange={onSearchChange} className="w-full" />
-            </div>
         </div>
     );
 }
