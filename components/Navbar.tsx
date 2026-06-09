@@ -10,10 +10,12 @@ import HeaderDesktop from "@/components/header/ HeaderDesktop";
 interface NavbarProps {
 
     onCartClick: () => void;
+    isMounted: boolean;
 }
 
 export default function Navbar({
                                    onCartClick,
+                                   isMounted
                                }: NavbarProps) {
     const { totalItems } = useCart();
 
@@ -24,13 +26,13 @@ export default function Navbar({
                 <HeaderDesktop
                     onCartClick={onCartClick}
                     totalItems={totalItems()}
-                    isMounted={true}
+                    isMounted={isMounted}
                 />
 
                 <HeaderMobile
                     onCartClick={onCartClick}
                     totalItems={totalItems()}
-                    isMounted={true}
+                    isMounted={isMounted}
                 />
             </div>
         </header>

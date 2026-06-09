@@ -74,7 +74,7 @@ export default function Filters(props: FiltersProps) {
             </div>
 
             {/* Десктоп версия */}
-            <div className="hidden lg:block bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sticky top-6">
+            <div className="hidden lg:block bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sticky top-45">
                 <DesktopFilters {...props} onReset={handleReset} />
             </div>
 

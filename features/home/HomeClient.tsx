@@ -25,6 +25,7 @@ export default function HomeClient() {
 
             <Navbar
                 onCartClick={handleCartOpen}
+                isMounted={isMounted}
             />
 
             <Catalog
