@@ -8,6 +8,7 @@ import { Plus, Save } from 'lucide-react';
 import ProductImageUpload from './ProductImageUpload';
 import CategoryModal from './CategoryModal';
 import BrandModal from './BrandModal';
+import SpecsModal from './SpecsModal';
 
 const productSchema = z.object({
     name: z.string().min(3, 'Название должно быть минимум 3 символа'),
@@ -21,6 +22,7 @@ const productSchema = z.object({
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
+type Spec = { key: string; value: string };
 
 export default function ProductForm() {
     const [images, setImages] = useState<File[]>([]);
@@ -29,9 +31,11 @@ export default function ProductForm() {
 
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+    const [specs, setSpecs] = useState<Spec[]>([]);
 
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showBrandModal, setShowBrandModal] = useState(false);
+    const [showSpecsModal, setShowSpecsModal] = useState(false);
 
     const {
         register,
@@ -43,7 +47,7 @@ export default function ProductForm() {
         defaultValues: { stock: '0', price: '0', oldPrice: '' },
     });
 
-    // Загружаем категории и бренды
+    // Загрузка категорий и брендов
     useEffect(() => {
         fetch('/api/admin/categories').then(r => r.json()).then(setCategories);
         fetch('/api/admin/brands').then(r => r.json()).then(setBrands);
@@ -63,6 +67,10 @@ export default function ProductForm() {
         setShowBrandModal(false);
     };
 
+    const updateSpecs = (newSpecs: Spec[]) => {
+        setSpecs(newSpecs);
+    };
+
     const onSubmit = async (data: ProductFormData) => {
         setIsLoading(true);
         const formData = new FormData();
@@ -76,6 +84,16 @@ export default function ProductForm() {
         formData.append('categoryId', data.categoryId);
         formData.append('brandId', data.brandId);
 
+        // Добавляем характеристики
+        if (specs.length > 0) {
+            const specsObject = specs.reduce((acc, item) => {
+                acc[item.key] = item.value;
+                return acc;
+            }, {} as Record<string, string>);
+
+            formData.append('specs', JSON.stringify(specsObject));
+        }
+
         images.forEach(file => formData.append('images', file));
 
         try {
@@ -84,7 +102,7 @@ export default function ProductForm() {
                 body: formData,
             });
 
-            if (!res.ok) throw new Error('Ошибка при создании');
+            if (!res.ok) throw new Error('Ошибка при создании товара');
 
             alert('✅ Товар успешно создан!');
             window.location.href = '/admin/products';
@@ -127,7 +145,6 @@ export default function ProductForm() {
                     {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock.message}</p>}
                 </div>
 
-                {/* Категория с кнопкой */}
                 <div>
                     <label className="block text-sm mb-2">Категория</label>
                     <div className="flex gap-2">
@@ -148,7 +165,6 @@ export default function ProductForm() {
                     {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId.message}</p>}
                 </div>
 
-                {/* Бренд с кнопкой */}
                 <div>
                     <label className="block text-sm mb-2">Бренд</label>
                     <div className="flex gap-2">
@@ -168,6 +184,25 @@ export default function ProductForm() {
                     </div>
                     {errors.brandId && <p className="text-red-500 text-sm mt-1">{errors.brandId.message}</p>}
                 </div>
+            </div>
+
+            {/* Характеристики */}
+            <div>
+                <label className="block text-sm mb-2">Характеристики товара</label>
+                <button
+                    type="button"
+                    onClick={() => setShowSpecsModal(true)}
+                    className="flex items-center gap-2 px-5 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition"
+                >
+                    <Plus className="w-4 h-4" />
+                    Добавить характеристики
+                </button>
+
+                {specs.length > 0 && (
+                    <div className="mt-3 text-sm text-zinc-400">
+                        Добавлено характеристик: {specs.length}
+                    </div>
+                )}
             </div>
 
             <div>
@@ -192,6 +227,7 @@ export default function ProductForm() {
                 {isLoading ? 'Создаём товар...' : 'Создать товар'}
             </button>
 
+            {/* Модалки */}
             <CategoryModal
                 isOpen={showCategoryModal}
                 onClose={() => setShowCategoryModal(false)}
@@ -202,6 +238,13 @@ export default function ProductForm() {
                 isOpen={showBrandModal}
                 onClose={() => setShowBrandModal(false)}
                 onSuccess={addNewBrand}
+            />
+
+            <SpecsModal
+                isOpen={showSpecsModal}
+                onClose={() => setShowSpecsModal(false)}
+                specs={specs}
+                onSave={updateSpecs}
             />
         </form>
     );
