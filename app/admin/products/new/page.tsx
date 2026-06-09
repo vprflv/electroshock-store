@@ -3,7 +3,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import ProductForm from "@/features/admin/products/new/components/ProductForm";
+import ProductForm from "@/features/admin/products/new/components/ProductForm/ProductForm";
 
 
 export default function NewProductPage() {

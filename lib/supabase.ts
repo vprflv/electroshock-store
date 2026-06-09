@@ -1,8 +1,34 @@
-export const SUPABASE_PUBLIC_URL = 'https://wxbhvhqqtimovksbulxd.supabase.co';
+// lib/supabase.ts
+import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-export const getImageUrl = (filename: string): string => {
-    if (!filename) return 'https://picsum.photos/id/106/600/600';
-    if (filename.startsWith('http')) return filename;
 
-    return `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/product-images/${filename}`;
+export const createClient = () => {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
+};
+
+
+export  const createServerSupabase = async () => {
+    const cookieStore = await cookies();
+
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value;
+                },
+                set(name: string, value: string, options: any) {
+                    cookieStore.set({ name, value, ...options });
+                },
+                remove(name: string, options: any) {
+                    cookieStore.set({ name, value: '', ...options });
+                },
+            },
+        }
+    );
 };

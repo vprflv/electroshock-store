@@ -1,4 +1,5 @@
-import { getImageUrl } from '@/lib/supabase';
+import {getImageUrl} from "@/lib/supabase-image";
+
 
 export const getProductImage = (product: any, index: number = 0): string => {
     if (!product) return 'https://picsum.photos/id/106/600/600';

@@ -1,8 +1,7 @@
 // app/api/admin/products/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { createServerSupabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,20 +18,32 @@ export async function POST(request: NextRequest) {
 
         const images = formData.getAll('images') as File[];
 
-        const imagePaths: string[] = [];
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products');
-        await mkdir(uploadDir, { recursive: true });
+        const imageFilenames: string[] = [];
 
+        // Создаём серверный клиент Supabase
+        const supabase = await createServerSupabase();
+
+        // Загрузка изображений
         for (const image of images) {
-            const bytes = await image.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-            const filename = `${Date.now()}-${image.name.replace(/\s+/g, '-')}`;
-            const filepath = path.join(uploadDir, filename);
+            const fileExt = image.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
-            await writeFile(filepath, buffer);
-            imagePaths.push(`/uploads/products/${filename}`);
+            const { error } = await supabase.storage
+                .from('product-images')
+                .upload(fileName, image, {
+                    cacheControl: '3600',
+                    upsert: false,
+                });
+
+            if (error) {
+                console.error('Supabase upload error:', error);
+                throw new Error(`Не удалось загрузить изображение: ${error.message}`);
+            }
+
+            imageFilenames.push(fileName); // сохраняем только имя файла
         }
 
+        // Создаём товар в базе
         const product = await prisma.product.create({
             data: {
                 name,
@@ -43,7 +54,7 @@ export async function POST(request: NextRequest) {
                 description,
                 categoryId,
                 brandId,
-                imagePaths,
+                imagePaths: imageFilenames,
                 specs: {},
                 features: [],
             },
@@ -51,12 +62,15 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, product }, { status: 201 });
     } catch (error: any) {
-        console.error(error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error('Create product error:', error);
+        return NextResponse.json({
+            success: false,
+            error: error.message || 'Ошибка создания товара'
+        }, { status: 500 });
     }
 }
 
-// DELETE (для кнопки удаления в таблице)
+
 export async function DELETE(request: NextRequest) {
     try {
         const id = request.nextUrl.searchParams.get('id');
