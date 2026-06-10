@@ -63,6 +63,7 @@ export const revalidateAllProducts = async () => {
         revalidateTag('catalog', 'default');
         revalidateTag('all-light-products', 'default');
         revalidateTag('all-products-admin', 'default');
+        revalidateTag('product', 'default');
 
         // Дополнительная инвалидация путей
         revalidatePath('/admin/products');
