@@ -100,3 +100,27 @@
 //     .finally(async () => {
 //         await prisma.$disconnect();
 //     });
+
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+
+async function main() {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+
+    const admin = await prisma.user.upsert({
+        where: { email: 'admin@electroshock.ru' },
+        update: {},
+        create: {
+            email: 'admin@electroshock.ru',
+            name: 'Главный Админ',
+            password: hashedPassword,
+            role: 'ADMIN',
+        },
+    });
+
+    console.log('✅ Админ создан:');
+    console.log('Email:', admin.email);
+    console.log('Пароль:', 'admin123');
+}
+
+main();

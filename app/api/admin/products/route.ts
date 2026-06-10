@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
         // Создаём серверный клиент Supabase
         const supabase = await createServerSupabase();
 
-        // Загрузка изображений
         for (const image of images) {
             const fileExt = image.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
@@ -37,13 +36,12 @@ export async function POST(request: NextRequest) {
 
             if (error) {
                 console.error('Supabase upload error:', error);
-                throw new Error(`Не удалось загрузить изображение: ${error.message}`);
+                throw new Error(`Не удалось загрузить файл ${image.name}: ${error.message}`);
             }
 
-            imageFilenames.push(fileName); // сохраняем только имя файла
+            imageFilenames.push(fileName);
         }
 
-        // Создаём товар в базе
         const product = await prisma.product.create({
             data: {
                 name,
@@ -54,7 +52,7 @@ export async function POST(request: NextRequest) {
                 description,
                 categoryId,
                 brandId,
-                imagePaths: imageFilenames,
+                imagePaths: imageFilenames,   // только имена файлов
                 specs: {},
                 features: [],
             },
@@ -70,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-
+// DELETE
 export async function DELETE(request: NextRequest) {
     try {
         const id = request.nextUrl.searchParams.get('id');

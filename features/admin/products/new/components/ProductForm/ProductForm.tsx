@@ -8,13 +8,14 @@ import { Save } from 'lucide-react';
 import {useCategories} from "@/features/admin/products/new/hooks/useCategories";
 import {useBrands} from "@/features/admin/products/new/hooks/useBrands";
 import {useSpecs} from "@/features/admin/products/new/hooks/useSpecs";
-import CategorySelector from "@/features/admin/products/new/components/ProductForm/CategorySelector";
-import BrandSelector from "@/features/admin/products/new/components/ProductForm/BrandSelector";
+
 import SpecsSelector from "@/features/admin/products/new/components/ProductForm/SpecsSelector";
 import ProductImageUpload from "@/features/admin/products/new/components/ProductImageUpload";
 import CategoryModal from "@/features/admin/products/new/components/CategoryModal";
 import BrandModal from "@/features/admin/products/new/components/BrandModal";
 import SpecsModal from "@/features/admin/products/new/components/SpecsModal";
+import CategorySelector from "@/features/admin/products/new/components/ProductForm/CategorySelector";
+import BrandSelector from "@/features/admin/products/new/components/ProductForm/BrandSelector";
 
 
 
