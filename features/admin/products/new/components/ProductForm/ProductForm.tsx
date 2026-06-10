@@ -9,15 +9,16 @@ import {useCategories} from "@/features/admin/products/new/hooks/useCategories";
 import {useBrands} from "@/features/admin/products/new/hooks/useBrands";
 import {useSpecs} from "@/features/admin/products/new/hooks/useSpecs";
 
-import SpecsSelector from "@/features/admin/products/new/components/ProductForm/SpecsSelector";
-import ProductImageUpload from "@/features/admin/products/new/components/ProductImageUpload";
-import CategoryModal from "@/features/admin/products/new/components/CategoryModal";
-import BrandModal from "@/features/admin/products/new/components/BrandModal";
-import SpecsModal from "@/features/admin/products/new/components/SpecsModal";
-import CategorySelector from "@/features/admin/products/new/components/ProductForm/CategorySelector";
-import BrandSelector from "@/features/admin/products/new/components/ProductForm/BrandSelector";
-
-
+import SpecsSelector from "@/features/admin/products/new/components/ProductForm/specs/SpecsSelector";
+import ProductImageUpload from "@/features/admin/products/new/components/images/ProductImageUpload";
+import CategoryModal from "@/features/admin/products/new/components/ProductForm/category/CategoryModal";
+import BrandModal from "@/features/admin/products/new/components/ProductForm/brands/BrandModal";
+import SpecsModal from "@/features/admin/products/new/components/ProductForm/specs/SpecsModal";
+import CategorySelector from "@/features/admin/products/new/components/ProductForm/category/CategorySelector";
+import BrandSelector from "@/features/admin/products/new/components/ProductForm/brands/BrandSelector";
+import {revalidateAllProducts} from "@/features/actions/productActions";
+import DeleteCategoryModal from "@/features/admin/products/new/components/ProductForm/category/DeleteCategoryModal";
+import DeleteBrandModal from "@/features/admin/products/new/components/ProductForm/brands/DeleteBrandModal";
 
 const productSchema = z.object({
     name: z.string().min(3, 'Название должно быть минимум 3 символа'),
@@ -37,14 +38,15 @@ export default function ProductForm() {
     const [previews, setPreviews] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { categories, addCategory } = useCategories();
-    const { brands, addBrand } = useBrands();
+    const { categories, addCategory, refetch: refetchCategories } = useCategories();
+    const { brands, addBrand, refetch: refetchBrands } = useBrands();
     const { specs, updateSpecs } = useSpecs();
 
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showBrandModal, setShowBrandModal] = useState(false);
     const [showSpecsModal, setShowSpecsModal] = useState(false);
-
+    const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+    const [showDeleteBrandModal, setShowDeleteBrandModal] = useState(false);
     const {
         register,
         handleSubmit,
@@ -88,6 +90,7 @@ export default function ProductForm() {
 
             if (!res.ok) throw new Error();
 
+            await revalidateAllProducts();
             alert('✅ Товар успешно создан!');
             window.location.href = '/admin/products';
         } catch (err) {
@@ -134,6 +137,7 @@ export default function ProductForm() {
                     register={register}
                     setValue={setValue}
                     onAddNew={() => setShowCategoryModal(true)}
+                    onDeleteClick={() => setShowDeleteCategoryModal(true)}
                 />
 
                 <BrandSelector
@@ -141,6 +145,14 @@ export default function ProductForm() {
                     register={register}
                     setValue={setValue}
                     onAddNew={() => setShowBrandModal(true)}
+                    onDeleteClick={() => setShowDeleteBrandModal(true)}
+                />
+
+                <DeleteBrandModal
+                    isOpen={showDeleteBrandModal}
+                    onClose={() => setShowDeleteBrandModal(false)}
+                    brands={brands}
+                    onDeleted={refetchBrands}
                 />
             </div>
 
@@ -173,6 +185,13 @@ export default function ProductForm() {
                 isOpen={showCategoryModal}
                 onClose={() => setShowCategoryModal(false)}
                 onSuccess={addCategory}
+            />
+
+            <DeleteCategoryModal
+                isOpen={showDeleteCategoryModal}
+                onClose={() => setShowDeleteCategoryModal(false)}
+                categories={categories}
+                onDeleted={refetchCategories}        // ← Теперь refetch вместо reload!
             />
 
             <BrandModal

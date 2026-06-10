@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import {toPlain} from "@/lib/utils/toPlain";
-import {unstable_cache} from "next/cache";
+import {unstable_cache, revalidateTag , revalidatePath } from "next/cache";
 
 
 // Лёгкая версия для каталога (быстрая загрузка)
@@ -34,6 +34,48 @@ export const getAllLightProducts = unstable_cache(
         tags: ['products', 'catalog'],
     }
 );
+
+
+// ==================== АДМИНКА ====================
+
+export const getAllProductsForAdmin = unstable_cache(
+    async () => {
+        const products = await prisma.product.findMany({
+            include: {
+                category: { select: { id: true, name: true, slug: true } },
+                brand:    { select: { id: true, name: true, slug: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return toPlain(products);
+    },
+    ['all-products-admin'],
+    { revalidate: 60, tags: ['admin', 'products'] }
+);
+
+// Инвалидация кэша
+export const revalidateAllProducts = async () => {
+    "use server";
+
+    try {
+        revalidateTag('products', 'default');
+        revalidateTag('catalog', 'default');
+        revalidateTag('all-light-products', 'default');
+        revalidateTag('all-products-admin', 'default');
+
+        // Дополнительная инвалидация путей
+        revalidatePath('/admin/products');
+        revalidatePath('/admin');
+        revalidatePath('/');
+    } catch (error) {
+        console.error('Revalidation error:', error);
+    }
+};
+
+
+
+
 
 
 // Кэшированная версия детального товара
