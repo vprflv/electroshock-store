@@ -52,7 +52,7 @@ export const getAllProductsForAdmin = unstable_cache(
                 imagePaths: true,
                 createdAt: true,
                 category: { select: { id: true, name: true } },
-                brand:    { select: { id: true, name: true } },
+                brand: { select: { id: true, name: true } },
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -61,41 +61,34 @@ export const getAllProductsForAdmin = unstable_cache(
     },
     ['all-products-admin'],
     {
-        revalidate: 60,           // 1 минута
+        revalidate: 60,           // 1 минута — хороший баланс
         tags: ['admin-products'],
     }
 );
 
 // Детальный товар специально для редактирования
-export const getProductForEdit = unstable_cache(
-    async (id: number) => {
-        const product = await prisma.product.findUnique({
-            where: { id },
-            select: {
-                id: true,
-                article: true,
-                name: true,
-                description: true,
-                price: true,
-                oldPrice: true,
-                stock: true,
-                images: true,
-                imagePaths: true,
-                specs: true,
-                categoryId: true,
-                brandId: true,
-            },
-        });
+export const getProductForEdit = async (id: number) => {
+    const product = await prisma.product.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            article: true,
+            name: true,
+            description: true,
+            price: true,
+            oldPrice: true,
+            stock: true,
+            images: true,
+            imagePaths: true,
+            specs: true,
+            categoryId: true,
+            brandId: true,
+        },
+    });
 
-        if (!product) throw new Error('Товар не найден');
-        return toPlain(product);
-    },
-    ['product-edit'],
-    {
-        revalidate: 300, // 5 минут
-        tags: ['admin-products', 'product-edit'],
-    }
-);
+    if (!product) throw new Error('Товар не найден');
+    return toPlain(product);
+};
 
 // Инвалидация кэша
 export const revalidateAllProducts = async () => {

@@ -13,14 +13,14 @@ import { useSpecs } from "@/features/admin/products/new/hooks/useSpecs";
 import { revalidateAllProducts } from "@/features/actions/productActions";
 
 const productSchema = z.object({
-    name: z.string().min(3),
-    article: z.string().min(2),
-    price: z.string().min(1).regex(/^\d+$/),
+    name: z.string().min(3, 'Название должно быть минимум 3 символа'),
+    article: z.string().min(2, 'Артикул обязателен'),
+    price: z.string().min(1).regex(/^\d+$/, 'Цена должна быть числом'),
     oldPrice: z.string().optional(),
-    stock: z.string().min(1).regex(/^\d+$/),
-    description: z.string().min(10),
-    categoryId: z.string().min(1),
-    brandId: z.string().min(1),
+    stock: z.string().min(1).regex(/^\d+$/, 'Остаток должен быть числом'),
+    description: z.string().min(10, 'Описание минимум 10 символов'),
+    categoryId: z.string().min(1, 'Выберите категорию'),
+    brandId: z.string().min(1, 'Выберите бренд'),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -32,7 +32,7 @@ export function useEditProduct(productId: number) {
     const [currentImageUrls, setCurrentImageUrls] = useState<string[]>([]);
 
     const [isSaving, setIsSaving] = useState(false);
-    const hasInitialized = useRef(false); // ← Защита от повторной инициализации
+    const hasInitialized = useRef(false);
 
     const { data: product, isLoading: initialLoading } = useAdminProduct(productId);
     const { categories, addCategory, refetch: refetchCategories } = useCategories();
@@ -44,13 +44,13 @@ export function useEditProduct(productId: number) {
         defaultValues: {
             stock: '0',
             price: '0',
-            oldPrice: ''
+            oldPrice: '',
         },
     });
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 transition";
 
-    // Инициализация формы — только один раз
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     useEffect(() => {
         if (!product || hasInitialized.current) return;
 
@@ -84,7 +84,7 @@ export function useEditProduct(productId: number) {
         }
     }, [product, form, updateSpecs]);
 
-    // Остальные функции без изменений
+    // ==================== РАБОТА С ИЗОБРАЖЕНИЯМИ ====================
     const addNewImages = useCallback((files: File[]) => {
         const previews = files.map(file => URL.createObjectURL(file));
         setNewFiles(prev => [...prev, ...files]);
@@ -104,18 +104,27 @@ export function useEditProduct(productId: number) {
         setNewFiles(prev => prev.filter((_, i) => i !== index));
     }, [newPreviews]);
 
+    // Очистка memory leak при размонтировании
     useEffect(() => {
-        return () => newPreviews.forEach(url => URL.revokeObjectURL(url));
+        return () => {
+            newPreviews.forEach(url => URL.revokeObjectURL(url));
+        };
     }, [newPreviews]);
 
+    // ==================== ОТПРАВКА ====================
     const onSubmit = async (data: ProductFormData) => {
         setIsSaving(true);
+
         const formData = new FormData();
 
+        // Основные поля
         Object.entries(data).forEach(([key, value]) => {
-            if (value !== undefined) formData.append(key, String(value));
+            if (value !== undefined && value !== null) {
+                formData.append(key, String(value));
+            }
         });
 
+        // Specs
         if (specs.length > 0) {
             const specsObj = specs.reduce((acc, item) => {
                 acc[item.key] = item.value;
@@ -124,7 +133,16 @@ export function useEditProduct(productId: number) {
             formData.append('specs', JSON.stringify(specsObj));
         }
 
-        newFiles.forEach(file => formData.append('images', file));
+        // === Изображения ===
+        console.log('=== DEBUG BEFORE SEND ===');
+        console.log('newFiles count:', newFiles.length);
+        console.log('remainingImagePaths:', currentImagePaths);
+
+        newFiles.forEach((file, i) => {
+            formData.append('images', file);
+            console.log(`Appended file ${i + 1}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+        });
+
         formData.append('remainingImagePaths', JSON.stringify(currentImagePaths));
 
         try {
@@ -133,12 +151,21 @@ export function useEditProduct(productId: number) {
                 body: formData,
             });
 
-            if (!res.ok) throw new Error();
+            const result = await res.json();
+            console.log('Server response:', result);
+
+            if (!res.ok) throw new Error(result.error || 'Ошибка обновления товара');
 
             await revalidateAllProducts();
-            toast.success('✅ Товар успешно обновлён!');
-            window.location.href = '/admin/products';
+            toast.success('Товар успешно обновлён!');
+
+            // Небольшая задержка перед редиректом (чтобы revalidate успел)
+            setTimeout(() => {
+                window.location.href = '/admin/products';
+            }, 400);
+
         } catch (err: any) {
+            console.error('Submit error:', err);
             toast.error(err.message || 'Ошибка при сохранении');
         } finally {
             setIsSaving(false);
@@ -148,8 +175,8 @@ export function useEditProduct(productId: number) {
     return {
         form,
         inputClass,
-        currentImages: currentImageUrls,
-        currentImagePaths,
+        currentImages: currentImageUrls,        // для отображения
+        currentImagePaths,                      // для remaining
         newPreviews,
         newFiles,
         addNewImages,

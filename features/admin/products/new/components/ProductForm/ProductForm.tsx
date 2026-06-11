@@ -8,6 +8,9 @@ import { Save } from 'lucide-react';
 import {useCategories} from "@/features/admin/products/new/hooks/useCategories";
 import {useBrands} from "@/features/admin/products/new/hooks/useBrands";
 import {useSpecs} from "@/features/admin/products/new/hooks/useSpecs";
+import { toast } from 'sonner';
+
+
 
 import SpecsSelector from "@/features/admin/products/new/components/ProductForm/specs/SpecsSelector";
 import ProductImageUpload from "@/features/admin/products/new/components/images/ProductImageUpload";
@@ -91,10 +94,15 @@ export default function ProductForm() {
             if (!res.ok) throw new Error();
 
             await revalidateAllProducts();
-            alert('✅ Товар успешно создан!');
+            toast.success('✅ Товар успешно создан!', {
+                description: `${data.name} добавлен в каталог`,
+                duration: 4000,
+            });
             window.location.href = '/admin/products';
-        } catch (err) {
-            alert('Ошибка при создании товара');
+        } catch (err:any) {
+            toast.error('Ошибка при создании товара', {
+                description: err.message || 'Проверьте данные и попробуйте снова',
+            });
         } finally {
             setIsLoading(false);
         }
@@ -191,7 +199,7 @@ export default function ProductForm() {
                 isOpen={showDeleteCategoryModal}
                 onClose={() => setShowDeleteCategoryModal(false)}
                 categories={categories}
-                onDeleted={refetchCategories}        // ← Теперь refetch вместо reload!
+                onDeleted={refetchCategories}
             />
 
             <BrandModal

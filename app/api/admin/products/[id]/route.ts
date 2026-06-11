@@ -42,26 +42,51 @@ export async function DELETE(
         const { id } = await params;
         const productId = parseInt(id);
 
+        const supabase = await createServerSupabase();
+        const BUCKET_NAME = 'product-images';
+
+        // 1. Получаем товар и его изображения
         const product = await prisma.product.findUnique({
             where: { id: productId },
-            select: { name: true }
+            select: {
+                name: true,
+                imagePaths: true
+            }
         });
 
         if (!product) {
             return NextResponse.json({ error: 'Товар не найден' }, { status: 404 });
         }
 
+        // 2. Удаляем файлы из Supabase Storage
+        if (product.imagePaths && product.imagePaths.length > 0) {
+            const { error: storageError } = await supabase.storage
+                .from(BUCKET_NAME)
+                .remove(product.imagePaths);
+
+            if (storageError) {
+                console.error('Storage delete error:', storageError);
+                // Не прерываем удаление товара, если storage упал
+            } else {
+                console.log(`🗑 Удалено ${product.imagePaths.length} изображений для товара ${product.name}`);
+            }
+        }
+
+        // 3. Удаляем товар из базы
         await prisma.product.delete({ where: { id: productId } });
 
         await revalidateAllProducts();
 
         return NextResponse.json({
             success: true,
-            message: `Товар "${product.name}" удалён`
+            message: `Товар "${product.name}" и его изображения успешно удалены`
         });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: 'Ошибка удаления товара' }, { status: 500 });
+
+    } catch (error: any) {
+        console.error('Delete product error:', error);
+        return NextResponse.json({
+            error: error.message || 'Ошибка при удалении товара'
+        }, { status: 500 });
     }
 }
 
@@ -121,6 +146,8 @@ export async function PUT(
         // === ЗАГРУЗКА НОВЫХ ИЗОБРАЖЕНИЙ ===
         const newImagePaths: string[] = [];
         const newImageUrls: string[] = [];
+
+        console.log('Received newFiles count:', newFiles.length);
 
         for (const file of newFiles) {
             const fileExt = file.name.split('.').pop();

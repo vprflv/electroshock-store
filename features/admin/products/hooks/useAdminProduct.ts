@@ -9,7 +9,7 @@ export const useAdminProduct = (id: number) => {
         queryKey: ['adminProduct', id],
         queryFn: () => getProductForEdit(id),
         enabled: !!id,
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
     });
 };

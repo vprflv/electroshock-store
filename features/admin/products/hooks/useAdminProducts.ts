@@ -13,7 +13,6 @@ import { AdminProduct } from "@/features/admin/types/admin";
 export function useAdminProducts() {
     const queryClient = useQueryClient();
 
-    // Основной запрос
     const {
         data: products = [],
         isLoading,
@@ -21,14 +20,14 @@ export function useAdminProducts() {
     } = useQuery({
         queryKey: ['adminProducts'],
         queryFn: getAllProductsForAdmin,
-        staleTime: 2 * 60 * 1000,     // 2 минуты
+        staleTime: 2 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
     });
 
-    // Мутация удаления
+    // Мутация удаления с красивым подтверждением
     const deleteMutation = useMutation({
-        mutationFn: async ({ id, name }: { id: number; name: string }) => {
+        mutationFn: async (id: number) => {
             const res = await fetch(`/api/admin/products/${id}`, {
                 method: 'DELETE',
             });
@@ -37,30 +36,44 @@ export function useAdminProducts() {
                 const error = await res.json().catch(() => ({}));
                 throw new Error(error.error || 'Не удалось удалить товар');
             }
-
-            return { id, name };
+            return id;
         },
-        onSuccess: async ({ id, name }) => {
-            // Оптимистическое обновление кэша
+        onSuccess: async (id) => {
+            // Оптимистическое обновление
             queryClient.setQueryData(['adminProducts'], (old: AdminProduct[] | undefined) =>
                 old?.filter(p => p.id !== id) || []
             );
 
             await revalidateAllProducts();
-
-            toast.success(`Товар "${name}" успешно удалён`);
+            toast.success('Товар успешно удалён');
         },
         onError: (err: any) => {
             toast.error(err.message || 'Ошибка при удалении товара');
         },
     });
 
+    // Функция с подтверждением через toast
+    const deleteProduct = (id: number, name: string) => {
+        toast.warning(`Вы уверены, что хотите удалить товар "${name}"?`, {
+            description: "Это действие нельзя отменить",
+            action: {
+                label: "Да, удалить",
+                onClick: () => deleteMutation.mutate(id),
+            },
+            cancel: {
+                label: "Отмена",
+                onClick: () => {},
+            },
+            duration: 6000, // даём время на размышление
+        });
+    };
+
     return {
         products,
         isLoading,
         isError,
-        deletingId: deleteMutation.variables?.id ?? null,
-        deleteProduct: (id: number, name: string) => deleteMutation.mutate({ id, name }),
+        deletingId: deleteMutation.variables ?? null,
+        deleteProduct,
         isDeleting: deleteMutation.isPending,
     };
 }
