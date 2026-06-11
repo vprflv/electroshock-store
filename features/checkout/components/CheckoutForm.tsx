@@ -2,25 +2,31 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useCheckout } from '../hooks/useCheckout';
 import OrderSummary from "@/features/checkout/components/OrderSummary";
 
 export default function CheckoutForm() {
     const router = useRouter();
     const checkout = useCheckout();
+    const [agreePolicy, setAgreePolicy] = useState(false);
 
     const {
         formData,
         deliveryNeeded,
         deliveryType,
-        paymentType,
         isSubmitting,
         handleChange,
         handleSubmit,
         setDeliveryNeeded,
         setDeliveryType,
-        setPaymentType,
     } = checkout;
+
+    const isFormValid = agreePolicy &&
+        formData.fullName.trim() &&
+        formData.phone.trim() &&
+        formData.email.trim() &&
+        (!deliveryNeeded || deliveryType !== 'courier' || formData.address.trim());
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10">
@@ -57,6 +63,14 @@ export default function CheckoutForm() {
                                 value={formData.phone}
                                 onChange={handleChange}
                                 required
+                                className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
+                            />
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Email "
+                                value={formData.email}
+                                onChange={handleChange}
                                 className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
                             />
                         </div>
@@ -110,32 +124,9 @@ export default function CheckoutForm() {
                         )}
                     </div>
 
-                    {/* Способ оплаты */}
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-4">Способ оплаты</h2>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setPaymentType('online')}
-                                className={`py-4 rounded-2xl border transition-all text-base ${paymentType === 'online' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
-                            >
-                                Оплата онлайн
-                            </button>
-                            {deliveryType === 'pickup' && (
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentType('cash')}
-                                    className={`py-4 rounded-2xl border transition-all text-base ${paymentType === 'cash' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
-                                >
-                                    При получении
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
                     {/* Комментарий */}
                     <div>
-                        <h2 className="text-2xl font-semibold mb-4">Комментарий</h2>
+                        <h2 className="text-2xl font-semibold mb-4">Комментарий к заказу</h2>
                         <textarea
                             name="comment"
                             placeholder="Подъезд, этаж, домофон, пожелания..."
@@ -146,11 +137,27 @@ export default function CheckoutForm() {
                         />
                     </div>
 
+                    {/* Согласие с политикой */}
+                    <div className="pt-4">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={agreePolicy}
+                                onChange={(e) => setAgreePolicy(e.target.checked)}
+                                className="mt-1 w-5 h-5 accent-yellow-400"
+                                required
+                            />
+                            <span className="text-sm text-zinc-400">
+                                Я согласен с <span className="text-yellow-400 hover:underline">политикой конфиденциальности</span> и условиями обработки персональных данных
+                            </span>
+                        </label>
+                    </div>
+
                     {/* Кнопка для десктопа */}
                     <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="hidden lg:block w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 text-black font-semibold text-xl py-5 rounded-3xl transition-colors"
+                        disabled={isSubmitting || !agreePolicy}
+                        className="hidden lg:block w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 disabled:cursor-not-allowed text-black font-semibold text-xl py-5 rounded-3xl transition-colors"
                     >
                         {isSubmitting
                             ? 'Оформляем заказ...'
@@ -159,9 +166,8 @@ export default function CheckoutForm() {
                 </form>
             </div>
 
-            {/* Правая колонка — состав заказа */}
+            {/* Правая колонка */}
             <div className="lg:col-span-2">
-                {/* Будем выносить позже */}
                 <OrderSummary
                     items={checkout.items}
                     totalPrice={checkout.totalPrice}

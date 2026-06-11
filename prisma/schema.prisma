@@ -127,7 +127,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
 
   quantity    Int
-  priceAtTime Int // цена на момент заказа (чтобы не менялась)
+  priceAtTime Int
 
   createdAt DateTime @default(now())
 

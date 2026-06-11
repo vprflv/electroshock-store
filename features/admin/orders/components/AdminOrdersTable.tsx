@@ -15,12 +15,16 @@ import { Search, Loader2, Eye } from 'lucide-react';
 
 import { useAdminOrders } from '../hooks/useAdminOrders';
 import { AdminOrder } from '@/features/admin/types/admin';
+import OrderDetailModal from "@/features/admin/orders/components/OrderDetailModal";
+import {updateOrderStatus} from "@/features/actions/productActions";
 
 export default function AdminOrdersTable() {
     const { orders, isLoading } = useAdminOrders();
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
+
+    const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
     const columns = useMemo<ColumnDef<AdminOrder>[]>(() => [
         {
@@ -94,8 +98,8 @@ export default function AdminOrdersTable() {
             header: '',
             cell: ({ row }) => (
                 <button
-                    onClick={() => alert(`Просмотр заказа #${row.original.orderNumber}`)} // потом заменим на модалку
-                    className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition"
+                    onClick={() => setSelectedOrder(row.original)}
+                    className="p-2 hover:bg-zinc-800 rounded-lg text-blue-400 hover:text-blue-500 transition"
                 >
                     <Eye className="w-4 h-4" />
                 </button>
@@ -208,6 +212,14 @@ export default function AdminOrdersTable() {
                     </button>
                 </div>
             </div>
+
+            <OrderDetailModal
+                order={selectedOrder}
+                isOpen={!!selectedOrder}
+                onClose={() => setSelectedOrder(null)}
+                onStatusChange={updateOrderStatus}
+            />
+
         </div>
     );
 }

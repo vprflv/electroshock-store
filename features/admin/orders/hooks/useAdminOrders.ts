@@ -15,35 +15,52 @@ export function useAdminOrders() {
     const {
         data: orders = [],
         isLoading,
-        isError,
     } = useQuery({
         queryKey: ['adminOrders'],
         queryFn: getAllOrdersForAdmin,
-        staleTime: 60 * 1000, // 1 минута
-        gcTime: 10 * 60 * 1000,
+        staleTime: 60 * 1000,
     });
 
-    // Мутация смены статуса
+
     const updateStatusMutation = useMutation({
         mutationFn: ({ id, status }: { id: string; status: AdminOrder['status'] }) =>
             updateOrderStatus(id, status),
 
+        onMutate: async ({ id, status }) => {
+            // Отменяем текущие запросы
+            await queryClient.cancelQueries({ queryKey: ['adminOrders'] });
+
+            const previousOrders = queryClient.getQueryData<AdminOrder[]>(['adminOrders']);
+
+            // Optimistic update
+            queryClient.setQueryData<AdminOrder[]>(['adminOrders'], (old = []) =>
+                old.map(order =>
+                    order.id === id ? { ...order, status } : order
+                )
+            );
+
+            return { previousOrders };
+        },
+
+        onError: (err, variables, context) => {
+            if (context?.previousOrders) {
+                queryClient.setQueryData(['adminOrders'], context.previousOrders);
+            }
+            toast.error('Не удалось обновить статус');
+        },
+
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
             toast.success('Статус заказа обновлён');
         },
 
-        onError: (err: any) => {
-            toast.error('Не удалось обновить статус', {
-                description: err.message || 'Попробуйте ещё раз',
-            });
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
         },
     });
 
     return {
         orders,
         isLoading,
-        isError,
         updateOrderStatus: updateStatusMutation.mutate,
         isUpdating: updateStatusMutation.isPending,
     };

@@ -19,6 +19,7 @@ export function useCheckout() {
         fullName: '',
         phone: '',
         address: '',
+        email: '',
         comment: '',
     });
 
