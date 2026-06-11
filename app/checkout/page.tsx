@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import {getProductImage} from "@/lib/utils/product-image-store";
+import { toast } from 'sonner';                    // ← Добавили
+import { getProductImage } from "@/lib/utils/product-image-store";
 
 type DeliveryType = 'courier' | 'pickup';
 type PaymentType = 'online' | 'cash';
@@ -19,7 +20,6 @@ export default function CheckoutPage() {
     const [formData, setFormData] = useState({
         fullName: '',
         phone: '',
-        city: 'Москва',
         address: '',
         comment: '',
     });
@@ -34,13 +34,73 @@ export default function CheckoutPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Валидация
+        if (!formData.fullName.trim()) {
+            toast.error('Введите ФИО');
+            return;
+        }
+        if (!formData.phone.trim()) {
+            toast.error('Введите телефон');
+            return;
+        }
+        if (deliveryNeeded && deliveryType === 'courier' && !formData.address.trim()) {
+            toast.error('Укажите адрес доставки');
+            return;
+        }
+
         setIsSubmitting(true);
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const orderItems = items.map(item => ({
+                productId: item.id,
+                quantity: item.quantity,
+                priceAtTime: item.price,
+            }));
 
-        alert('✅ Заказ успешно оформлен!');
-        clearCart();
-        router.push('/');
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fullName: formData.fullName.trim(),
+                    phone: formData.phone.trim(),
+                    address: deliveryNeeded && deliveryType === 'courier'
+                        ? formData.address.trim()
+                        : 'Самовывоз',
+                    comment: formData.comment.trim(),
+                    deliveryType,
+                    paymentType,
+                    items: orderItems,
+                    total: totalPrice(),
+                }),
+            });
+
+            const result = await res.json();
+
+            if (!res.ok) {
+                throw new Error(result.error || 'Не удалось оформить заказ');
+            }
+
+            toast.success(`✅ Заказ #${result.orderNumber} успешно оформлен!`, {
+                description: 'Мы свяжемся с вами в ближайшее время',
+                duration: 5000,
+            });
+
+            clearCart();
+
+            localStorage.setItem('justOrdered', 'true');
+            setTimeout(() => {
+                router.push(`/thank-you?orderNumber=${result.orderNumber}`);
+            }, 700);
+
+        } catch (err: any) {
+            console.error(err);
+            toast.error('Ошибка при оформлении заказа', {
+                description: err.message || 'Пожалуйста, попробуйте ещё раз',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (items.length === 0) {
@@ -58,7 +118,7 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white pb-28"> {/* увеличил отступ снизу под плавающий блок */}
+        <div className="min-h-screen bg-zinc-950 text-white pb-28">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
                 <button
                     onClick={() => router.back()}
@@ -240,7 +300,7 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            {/* Плавающий блок "Итого + кнопка" только для мобильных */}
+            {/* Плавающий блок для мобильных */}
             <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-zinc-950 border-t border-zinc-800 p-4 z-50 shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
                     <span className="text-lg font-semibold">Итого:</span>

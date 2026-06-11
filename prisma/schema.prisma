@@ -13,8 +13,10 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
-  password      String? // для Credentials
+  password      String?
   role          Role      @default(USER)
+
+  orders Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,7 +32,7 @@ enum Role {
 model Category {
   id       String    @id @default(cuid())
   name     String    @unique
-  slug     String    @unique @map("slug")
+  slug     String    @unique
   products Product[]
 
   createdAt DateTime @default(now())
@@ -75,10 +77,10 @@ model Product {
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   brand    Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
+  orderItems OrderItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // ====================  ИНДЕКСЫ ====================
 
   @@index([categoryId])
   @@index([brandId])
@@ -86,15 +88,56 @@ model Product {
   @@index([stock])
   @@index([createdAt])
   @@index([article])
-  // составные индексы
-  @@index([categoryId, price])
-  @@index([brandId, price])
-  @@index([categoryId, brandId])
-  @@index([categoryId, stock])
-  @@index([brandId, stock])
-  @@index([price, stock])
-  // Для поиска
   @@index([name])
-  @@index([name, article])
   @@map("products")
+}
+
+// ==================== ЗАКАЗЫ ====================
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique // например: ES-20250611-0042
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  customerAddress String
+  customerComment String? @db.Text
+
+  total  Int // итоговая сумма
+  status OrderStatus @default(PENDING)
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity    Int
+  priceAtTime Int // цена на момент заказа (чтобы не менялась)
+
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }

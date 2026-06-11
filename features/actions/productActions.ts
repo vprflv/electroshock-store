@@ -66,6 +66,75 @@ export const getAllProductsForAdmin = unstable_cache(
     }
 );
 
+
+
+
+export const getAllOrdersForAdmin = async () => {
+    const orders = await prisma.order.findMany({
+        include: {
+            items: {
+                include: {
+                    product: {
+                        select: {
+                            id: true,
+                            article: true,
+                            name: true,
+                            images: true,
+                        }
+                    }
+                }
+            },
+            user: {
+                select: { id: true, name: true, email: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return toPlain(orders);
+};
+
+
+export const getOrderByIdForAdmin = async (id: string) => {
+    const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+            items: {
+                include: {
+                    product: {
+                        select: {
+                            id: true,
+                            article: true,
+                            name: true,
+                            images: true,
+                        }
+                    }
+                }
+            },
+            user: {
+                select: { id: true, name: true, email: true }
+            }
+        },
+    });
+
+    if (!order) throw new Error('Заказ не найден');
+    return toPlain(order);
+};
+
+
+export const updateOrderStatus = async (
+    id: string,
+    status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+) => {
+    const order = await prisma.order.update({
+        where: { id },
+        data: { status },
+    });
+
+    revalidatePath('/admin/orders');
+    return toPlain(order);
+};
+
 // Детальный товар специально для редактирования
 export const getProductForEdit = async (id: number) => {
     const product = await prisma.product.findUnique({
