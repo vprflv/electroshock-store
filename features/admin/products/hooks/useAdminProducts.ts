@@ -1,46 +1,66 @@
 // features/admin/products/hooks/useAdminProducts.ts
 'use client';
 
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+import {
+    getAllProductsForAdmin,
+    revalidateAllProducts,
+} from "@/features/actions/productActions";
 import { AdminProduct } from "@/features/admin/types/admin";
-import {revalidateAllProducts} from "@/features/actions/productActions";
 
-export function useAdminProducts(initialProducts: AdminProduct[]) {
-    const [data, setData] = useState<AdminProduct[]>(initialProducts);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+export function useAdminProducts() {
+    const queryClient = useQueryClient();
 
-    const handleDelete = async (id: number, name: string) => {
-        if (!confirm(`Удалить товар "${name}"?`)) return;
+    // Основной запрос
+    const {
+        data: products = [],
+        isLoading,
+        isError,
+    } = useQuery({
+        queryKey: ['adminProducts'],
+        queryFn: getAllProductsForAdmin,
+        staleTime: 2 * 60 * 1000,     // 2 минуты
+        gcTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: false,
+    });
 
-        setDeletingId(id);
-
-        try {
+    // Мутация удаления
+    const deleteMutation = useMutation({
+        mutationFn: async ({ id, name }: { id: number; name: string }) => {
             const res = await fetch(`/api/admin/products/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
             });
 
             if (!res.ok) {
-                const error = await res.json();
+                const error = await res.json().catch(() => ({}));
                 throw new Error(error.error || 'Не удалось удалить товар');
             }
 
-            setData(prev => prev.filter(p => p.id !== id));
+            return { id, name };
+        },
+        onSuccess: async ({ id, name }) => {
+            // Оптимистическое обновление кэша
+            queryClient.setQueryData(['adminProducts'], (old: AdminProduct[] | undefined) =>
+                old?.filter(p => p.id !== id) || []
+            );
 
             await revalidateAllProducts();
 
             toast.success(`Товар "${name}" успешно удалён`);
-        } catch (err: any) {
+        },
+        onError: (err: any) => {
             toast.error(err.message || 'Ошибка при удалении товара');
-        } finally {
-            setDeletingId(null);
-        }
-    };
+        },
+    });
 
     return {
-        data,
-        setData,
-        deletingId,
-        handleDelete,
+        products,
+        isLoading,
+        isError,
+        deletingId: deleteMutation.variables?.id ?? null,
+        deleteProduct: (id: number, name: string) => deleteMutation.mutate({ id, name }),
+        isDeleting: deleteMutation.isPending,
     };
 }

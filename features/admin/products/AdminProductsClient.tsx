@@ -1,11 +1,8 @@
 // app/admin/products/AdminProductsClient.tsx
-import AdminProductsTable from '@/features/admin/products/components/AdminProductsTable';
-import { AdminProduct } from "@/features/admin/types/admin";
+'use client';
 
-export default function AdminProductsClient({
-                                                initialProducts
-                                            }: {
-    initialProducts: AdminProduct[]
-}) {
-    return <AdminProductsTable initialProducts={initialProducts} />;
+import AdminProductsTable from '@/features/admin/products/components/AdminProductsTable';
+
+export default function AdminProductsClient() {
+    return <AdminProductsTable />;
 }

@@ -12,18 +12,14 @@ import {
     type ColumnDef,
     type SortingState,
 } from '@tanstack/react-table';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { useAdminProducts } from '../hooks/useAdminProducts';
 import { AdminProduct } from "@/features/admin/types/admin";
 
-export default function AdminProductsTable({
-                                               initialProducts
-                                           }: {
-    initialProducts: AdminProduct[]
-}) {
-    const { data, deletingId, handleDelete } = useAdminProducts(initialProducts);
+export default function AdminProductsTable() {
+    const { products, isLoading, deletingId, deleteProduct } = useAdminProducts();
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -68,6 +64,8 @@ export default function AdminProductsTable({
             size: 120,
             cell: ({ row }) => {
                 const product = row.original;
+                const isDeleting = deletingId === product.id;
+
                 return (
                     <div className="flex items-center gap-2">
                         <Link
@@ -79,21 +77,21 @@ export default function AdminProductsTable({
                         </Link>
 
                         <button
-                            onClick={() => handleDelete(product.id, product.name)}
-                            disabled={deletingId === product.id}
+                            onClick={() => deleteProduct(product.id, product.name)}
+                            disabled={isDeleting}
                             className="p-2 hover:bg-zinc-800 rounded-lg text-red-400 hover:text-red-500 transition disabled:opacity-50"
                             title="Удалить"
                         >
-                            <Trash2 className="w-4 h-4" />
+                            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         </button>
                     </div>
                 );
             },
         },
-    ], [deletingId, handleDelete]);
+    ], [deletingId, deleteProduct]);
 
     const table = useReactTable({
-        data,
+        data: products,
         columns,
         state: { sorting, globalFilter },
         onSortingChange: setSorting,
@@ -104,12 +102,20 @@ export default function AdminProductsTable({
         getPaginationRowModel: getPaginationRowModel(),
     });
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-32">
+                <Loader2 className="w-8 h-8 animate-spin text-yellow-400" />
+            </div>
+        );
+    }
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Товары</h1>
-                    <p className="text-zinc-400">Всего товаров: {data.length}</p>
+                    <p className="text-zinc-400">Всего товаров: {products.length}</p>
                 </div>
 
                 <Link
