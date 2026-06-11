@@ -6,10 +6,10 @@ import Image from 'next/image';
 type ProductImageUploadProps = {
     images: File[];
     previews: string[];
-    existingImages?: string[];                    // ← Новое
+    existingImages?: string[];
     onImagesChange: (files: File[]) => void;
     onPreviewsChange: (previews: string[]) => void;
-    onExistingImagesChange?: (images: string[]) => void; // ← Новое
+    onExistingImagesChange?: (images: string[]) => void;
 };
 
 export default function ProductImageUpload({
