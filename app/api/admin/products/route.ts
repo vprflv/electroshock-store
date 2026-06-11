@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createServerSupabase } from '@/lib/supabase';
+import { revalidateAllProducts } from '@/features/actions/productActions';
+
+const BUCKET_NAME = 'product-images';
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,31 +18,40 @@ export async function POST(request: NextRequest) {
         const description = formData.get('description') as string;
         const categoryId = formData.get('categoryId') as string;
         const brandId = formData.get('brandId') as string;
+        const specsJson = formData.get('specs') as string | null;
 
         const images = formData.getAll('images') as File[];
 
-        const imageFilenames: string[] = [];
+        const imagePaths: string[] = [];
+        const imageUrls: string[] = [];
 
-        // Создаём серверный клиент Supabase
         const supabase = await createServerSupabase();
 
+        // Загрузка изображений в Supabase Storage
         for (const image of images) {
             const fileExt = image.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
-            const { error } = await supabase.storage
-                .from('product-images')
+            const { error: uploadError } = await supabase.storage
+                .from(BUCKET_NAME)
                 .upload(fileName, image, {
                     cacheControl: '3600',
                     upsert: false,
                 });
 
-            if (error) {
-                console.error('Supabase upload error:', error);
-                throw new Error(`Не удалось загрузить файл ${image.name}: ${error.message}`);
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error(`Не удалось загрузить файл ${image.name}`);
             }
 
-            imageFilenames.push(fileName);
+            imagePaths.push(fileName);
+
+            // Получаем публичный URL
+            const { data: publicUrlData } = supabase.storage
+                .from(BUCKET_NAME)
+                .getPublicUrl(fileName);
+
+            imageUrls.push(publicUrlData.publicUrl);
         }
 
         const product = await prisma.product.create({
@@ -52,31 +64,25 @@ export async function POST(request: NextRequest) {
                 description,
                 categoryId,
                 brandId,
-                imagePaths: imageFilenames,   // только имена файлов
-                specs: {},
+                images: imageUrls,
+                imagePaths: imagePaths,
+                specs: specsJson ? JSON.parse(specsJson) : {},
                 features: [],
             },
         });
 
-        return NextResponse.json({ success: true, product }, { status: 201 });
+        await revalidateAllProducts();
+
+        return NextResponse.json({
+            success: true,
+            product
+        }, { status: 201 });
+
     } catch (error: any) {
         console.error('Create product error:', error);
         return NextResponse.json({
             success: false,
             error: error.message || 'Ошибка создания товара'
         }, { status: 500 });
-    }
-}
-
-// DELETE
-export async function DELETE(request: NextRequest) {
-    try {
-        const id = request.nextUrl.searchParams.get('id');
-        if (!id) return NextResponse.json({ error: 'ID не указан' }, { status: 400 });
-
-        await prisma.product.delete({ where: { id: parseInt(id) } });
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json({ error: 'Ошибка удаления' }, { status: 500 });
     }
 }

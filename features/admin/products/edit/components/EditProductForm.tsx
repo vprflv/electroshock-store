@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
-import { useEditProduct } from './hooks/useEditProduct';
+import { useEditProduct } from '../hooks/useEditProduct';
 
 import SpecsSelector from "@/features/admin/products/new/components/ProductForm/specs/SpecsSelector";
 import ProductImageUpload from "@/features/admin/products/new/components/images/ProductImageUpload";
@@ -17,7 +19,7 @@ import SpecsModal from "@/features/admin/products/new/components/ProductForm/spe
 
 import DeleteCategoryModal from "@/features/admin/products/new/components/ProductForm/category/DeleteCategoryModal";
 import DeleteBrandModal from "@/features/admin/products/new/components/ProductForm/brands/DeleteBrandModal";
-import {useState} from "react";
+import EditProductImageUpload from "@/features/admin/products/edit/components/images/EditProductImageUpload";
 
 type Props = {
     productId: number;
@@ -27,12 +29,8 @@ export default function EditProductForm({ productId }: Props) {
     const {
         form,
         inputClass,
-        images,
-        setImages,
-        previews,
-        setPreviews,
-        existingImages,
-        setExistingImages,
+        currentImages,
+        newPreviews,
         isLoading,
         initialLoading,
         onSubmit,
@@ -44,6 +42,10 @@ export default function EditProductForm({ productId }: Props) {
         addBrand,
         refetchCategories,
         refetchBrands,
+
+        addNewImages,
+        removeCurrentImage,
+        removeNewImage,
     } = useEditProduct(productId);
 
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -67,26 +69,23 @@ export default function EditProductForm({ productId }: Props) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Поля формы */}
                 <div>
                     <label className="block text-sm mb-2">Артикул</label>
                     <input {...form.register('article')} className={inputClass} />
                 </div>
-
                 <div>
                     <label className="block text-sm mb-2">Название товара</label>
                     <input {...form.register('name')} className={inputClass} />
                 </div>
-
                 <div>
                     <label className="block text-sm mb-2">Цена (₽)</label>
                     <input type="text" {...form.register('price')} className={inputClass} />
                 </div>
-
                 <div>
                     <label className="block text-sm mb-2">Старая цена</label>
                     <input type="text" {...form.register('oldPrice')} className={inputClass} />
                 </div>
-
                 <div>
                     <label className="block text-sm mb-2">Остаток на складе</label>
                     <input type="text" {...form.register('stock')} className={inputClass} />
@@ -121,13 +120,13 @@ export default function EditProductForm({ productId }: Props) {
                 />
             </div>
 
-            <ProductImageUpload
-                images={images}
-                previews={previews}
-                existingImages={existingImages}
-                onImagesChange={setImages}
-                onPreviewsChange={setPreviews}
-                onExistingImagesChange={setExistingImages}
+            {/* ← Здесь изображения */}
+            <EditProductImageUpload
+                currentImages={currentImages}
+                newPreviews={newPreviews}
+                onAddNewImages={addNewImages}
+                onRemoveCurrent={removeCurrentImage}
+                onRemoveNew={removeNewImage}
             />
 
             <button

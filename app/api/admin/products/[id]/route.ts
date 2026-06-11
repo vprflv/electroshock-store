@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { revalidateAllProducts } from '@/features/actions/productActions';
+import {createServerSupabase} from "@/lib/supabase";
 
 
 
@@ -64,7 +65,9 @@ export async function DELETE(
     }
 }
 
-// ==================== PUT - Обновление товара ====================
+
+
+
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -85,30 +88,78 @@ export async function PUT(
         const brandId = formData.get('brandId') as string;
         const specsJson = formData.get('specs') as string | null;
 
-        const newImages = formData.getAll('images') as File[];
+        const newFiles = formData.getAll('images') as File[];
+        const remainingImagePathsJson = formData.get('remainingImagePaths') as string | null;
+        const remainingImagePaths = remainingImagePathsJson
+            ? JSON.parse(remainingImagePathsJson) as string[]
+            : [];
 
-        // Проверяем существование товара
+        const supabase = await createServerSupabase();
+        const BUCKET_NAME = 'product-images';
+
         const existingProduct = await prisma.product.findUnique({
-            where: { id: productId }
+            where: { id: productId },
+            select: { images: true, imagePaths: true, specs: true }
         });
 
         if (!existingProduct) {
             return NextResponse.json({ error: 'Товар не найден' }, { status: 404 });
         }
 
+        // === УДАЛЕНИЕ ИЗОБРАЖЕНИЙ ===
+        const imagesToDelete = existingProduct.imagePaths?.filter(
+            path => !remainingImagePaths.includes(path)
+        ) || [];
+
+        // Удаляем файлы из Supabase Storage
+        for (const fileName of imagesToDelete) {
+            await supabase.storage
+                .from(BUCKET_NAME)
+                .remove([fileName]);
+        }
+
+        // === ЗАГРУЗКА НОВЫХ ИЗОБРАЖЕНИЙ ===
+        const newImagePaths: string[] = [];
+        const newImageUrls: string[] = [];
+
+        for (const file of newFiles) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+            const { error } = await supabase.storage
+                .from(BUCKET_NAME)
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+            if (error) throw error;
+
+            newImagePaths.push(fileName);
+
+            const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+            newImageUrls.push(data.publicUrl);
+        }
+
+        // Финальные массивы
+        const finalImagePaths = [...remainingImagePaths, ...newImagePaths];
+        const finalImages = [
+            ...remainingImagePaths.map(path => {
+                const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+                return data.publicUrl;
+            }),
+            ...newImageUrls
+        ];
+
         const updatedProduct = await prisma.product.update({
             where: { id: productId },
             data: {
-                name,
-                article,
-                price,
+                name, article, price,
                 oldPrice: oldPriceStr ? parseInt(oldPriceStr) : null,
                 stock,
                 description,
                 categoryId,
                 brandId,
                 specs: specsJson ? JSON.parse(specsJson) : existingProduct.specs,
-                // images и imagePaths пока оставляем как есть (доработаем позже)
+                images: finalImages,
+                imagePaths: finalImagePaths,
             },
         });
 
@@ -122,8 +173,6 @@ export async function PUT(
 
     } catch (error: any) {
         console.error('Update product error:', error);
-        return NextResponse.json({
-            error: error.message || 'Ошибка при обновлении товара'
-        }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Ошибка обновления' }, { status: 500 });
     }
 }

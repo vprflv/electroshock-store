@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import EditProductForm from "@/features/admin/products/edit/EditProductForm";
+import EditProductForm from "@/features/admin/products/edit/components/EditProductForm";
 
 
 export default async function EditProductPage({

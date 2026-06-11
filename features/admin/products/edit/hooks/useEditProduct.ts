@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
 import { useCategories } from "@/features/admin/products/new/hooks/useCategories";
@@ -25,9 +25,11 @@ const productSchema = z.object({
 type ProductFormData = z.infer<typeof productSchema>;
 
 export function useEditProduct(productId: number) {
-    const [images, setImages] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
-    const [existingImages, setExistingImages] = useState<string[]>([]);
+    const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [newPreviews, setNewPreviews] = useState<string[]>([]);
+    const [currentImagePaths, setCurrentImagePaths] = useState<string[]>([]);
+    const [currentImageUrls, setCurrentImageUrls] = useState<string[]>([]);
+
     const [isLoading, setIsLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
 
@@ -42,23 +44,27 @@ export function useEditProduct(productId: number) {
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 transition";
 
-    // Один единственный запрос при монтировании
+    // Загрузка товара
     useEffect(() => {
         let isMounted = true;
 
         const loadProduct = async () => {
             try {
-                const res = await fetch(`/api/admin/products/${productId}`, {
-                    cache: 'no-store',
-                });
-
+                const res = await fetch(`/api/admin/products/${productId}`, { cache: 'no-store' });
                 if (!res.ok) throw new Error();
 
                 const product = await res.json();
 
                 if (!isMounted) return;
 
-                setExistingImages(product.images || []);
+                const imagePaths = product.imagePaths || [];
+                const imageUrls = product.images || [];
+
+                setCurrentImagePaths(imagePaths);
+                setCurrentImageUrls(imageUrls);
+
+                setNewFiles([]);
+                setNewPreviews([]);
 
                 form.reset({
                     name: product.name,
@@ -81,23 +87,44 @@ export function useEditProduct(productId: number) {
             } catch (err) {
                 toast.error('Ошибка загрузки товара');
             } finally {
-                setInitialLoading(false);
+                if (isMounted) setInitialLoading(false);
             }
         };
 
         loadProduct();
 
-        return () => {
-            isMounted = false;
-        };
-    }, [productId]); // ← Только productId — это самое важное
+        return () => { isMounted = false; };
+    }, [productId]);
+
+    const addNewImages = useCallback((files: File[]) => {
+        const previews = files.map(file => URL.createObjectURL(file));
+        setNewFiles(prev => [...prev, ...files]);
+        setNewPreviews(prev => [...prev, ...previews]);
+    }, []);
+
+    const removeCurrentImage = useCallback((index: number) => {
+        setCurrentImagePaths(prev => prev.filter((_, i) => i !== index));
+        setCurrentImageUrls(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const removeNewImage = useCallback((index: number) => {
+        const previewUrl = newPreviews[index];
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+        setNewPreviews(prev => prev.filter((_, i) => i !== index));
+        setNewFiles(prev => prev.filter((_, i) => i !== index));
+    }, [newPreviews]);
+
+    useEffect(() => {
+        return () => newPreviews.forEach(url => URL.revokeObjectURL(url));
+    }, [newPreviews]);
 
     const onSubmit = async (data: ProductFormData) => {
         setIsLoading(true);
         const formData = new FormData();
 
         Object.entries(data).forEach(([key, value]) => {
-            if (value !== undefined) formData.append(key, value);
+            if (value !== undefined) formData.append(key, String(value));
         });
 
         if (specs.length > 0) {
@@ -108,7 +135,8 @@ export function useEditProduct(productId: number) {
             formData.append('specs', JSON.stringify(specsObj));
         }
 
-        images.forEach(file => formData.append('images', file));
+        newFiles.forEach(file => formData.append('images', file));
+        formData.append('remainingImagePaths', JSON.stringify(currentImagePaths)); // ← Отправляем file names!
 
         try {
             const res = await fetch(`/api/admin/products/${productId}`, {
@@ -131,12 +159,13 @@ export function useEditProduct(productId: number) {
     return {
         form,
         inputClass,
-        images,
-        setImages,
-        previews,
-        setPreviews,
-        existingImages,
-        setExistingImages,
+        currentImages: currentImageUrls,
+        currentImagePaths,
+        newPreviews,
+        newFiles,
+        addNewImages,
+        removeCurrentImage,
+        removeNewImage,
         isLoading,
         initialLoading,
         onSubmit,
