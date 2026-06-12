@@ -53,19 +53,37 @@ export function useAdminProducts() {
     });
 
     // Функция с подтверждением через toast
-    const deleteProduct = (id: number, name: string) => {
-        toast.warning(`Вы уверены, что хотите удалить товар "${name}"?`, {
-            description: "Это действие нельзя отменить",
-            action: {
-                label: "Да, удалить",
-                onClick: () => deleteMutation.mutate(id),
-            },
-            cancel: {
-                label: "Отмена",
-                onClick: () => {},
-            },
-            duration: 6000, // даём время на размышление
-        });
+    const deleteProduct = async (id: number, name: string) => {
+        if (!confirm(`Удалить товар "${name}"?`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/products/${id}`, {
+                method: 'DELETE'
+            });
+
+            const data = await res.json();
+
+            if (res.status === 409) {
+
+                let message = data.message + '\n\n';
+                if (data.orders && data.orders.length > 0) {
+                    message += 'Заказы:\n';
+                    data.orders.forEach((o: any) => {
+                        message += `• #${o.orderNumber} (${o.status}) от ${o.date}\n`;
+                    });
+                }
+                toast.error(message);
+                return;
+            }
+
+            if (!res.ok) throw new Error();
+
+            toast.success(`Товар "${name}" успешно удалён`);
+            // invalidate queries...
+
+        } catch (err) {
+            toast.error('Не удалось удалить товар');
+        }
     };
 
     return {

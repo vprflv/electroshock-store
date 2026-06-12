@@ -11,14 +11,14 @@ import {
     type ColumnDef,
     type SortingState,
 } from '@tanstack/react-table';
-import { Search, Loader2, Eye } from 'lucide-react';
+import {Search, Loader2, Eye, Trash2} from 'lucide-react';
 
 import { useAdminOrders } from '../hooks/useAdminOrders';
 import { AdminOrder } from '@/features/admin/types/admin';
 import OrderDetailModal from "@/features/admin/orders/components/OrderDetailModal";
 
 export default function AdminOrdersTable() {
-    const { orders, isLoading, updateOrderStatus } = useAdminOrders();
+    const { orders, isLoading, updateOrderStatus, deleteOrder } = useAdminOrders();
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -26,6 +26,13 @@ export default function AdminOrdersTable() {
 
     const handleStatusChange = (id: string, status: AdminOrder['status']) => {
         updateOrderStatus({ id, status });
+    };
+    const handleDeleteOrder = (id: string, orderNumber: string) => {
+        if (!confirm(`Вы уверены, что хотите удалить заказ #${orderNumber}?`)) {
+            return;
+        }
+
+        deleteOrder(id);
     };
 
     const columns = useMemo<ColumnDef<AdminOrder>[]>(() => [
@@ -89,14 +96,26 @@ export default function AdminOrdersTable() {
         {
             id: 'actions',
             header: '',
-            cell: ({ row }) => (
-                <button
-                    onClick={() => setSelectedOrder(row.original)}
-                    className="p-2 hover:bg-zinc-800 rounded-lg text-blue-400 hover:text-blue-500 transition"
-                >
-                    <Eye className="w-4 h-4" />
-                </button>
-            ),
+            cell: ({ row }) => {
+                const order = row.original;
+                return (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="p-2 hover:bg-zinc-800 rounded-lg text-blue-400 hover:text-blue-500"
+                        >
+                            <Eye className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                            className="p-2 hover:bg-zinc-800 rounded-lg text-red-400 hover:text-red-500"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                );
+            },
         },
     ], []);
 
@@ -111,6 +130,8 @@ export default function AdminOrdersTable() {
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
     });
+
+
 
     if (isLoading) {
         return (

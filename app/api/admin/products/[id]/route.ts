@@ -4,8 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { revalidateAllProducts } from '@/features/actions/productActions';
 import {createServerSupabase} from "@/lib/supabase";
 
-
-
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -34,64 +32,61 @@ export async function GET(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function DELETE(
-    request: NextRequest,
+    request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;
         const productId = parseInt(id);
 
-        const supabase = await createServerSupabase();
-        const BUCKET_NAME = 'product-images';
+        if (isNaN(productId)) {
+            return NextResponse.json({ message: 'Неверный ID товара' }, { status: 400 });
+        }
 
-        // 1. Получаем товар и его изображения
-        const product = await prisma.product.findUnique({
+        // Проверяем, есть ли товар в заказах
+        const orderItemsCount = await prisma.orderItem.count({
+            where: { productId }
+        });
+
+        if (orderItemsCount > 0) {
+            return NextResponse.json({
+                message: `Невозможно удалить товар. Он используется в ${orderItemsCount} заказе(ах). Сначала удалите заказы или отмените позиции с этим товаром.`
+            }, { status: 409 });
+        }
+
+        // Удаляем товар
+        const deletedProduct = await prisma.product.delete({
             where: { id: productId },
-            select: {
-                name: true,
-                imagePaths: true
-            }
+            select: { name: true, article: true }
         });
 
-        if (!product) {
-            return NextResponse.json({ error: 'Товар не найден' }, { status: 404 });
-        }
-
-        // 2. Удаляем файлы из Supabase Storage
-        if (product.imagePaths && product.imagePaths.length > 0) {
-            const { error: storageError } = await supabase.storage
-                .from(BUCKET_NAME)
-                .remove(product.imagePaths);
-
-            if (storageError) {
-                console.error('Storage delete error:', storageError);
-                // Не прерываем удаление товара, если storage упал
-            } else {
-                console.log(`🗑 Удалено ${product.imagePaths.length} изображений для товара ${product.name}`);
-            }
-        }
-
-        // 3. Удаляем товар из базы
-        await prisma.product.delete({ where: { id: productId } });
-
-        await revalidateAllProducts();
-
         return NextResponse.json({
-            success: true,
-            message: `Товар "${product.name}" и его изображения успешно удалены`
+            message: `Товар "${deletedProduct.name}" (${deletedProduct.article}) успешно удалён`
         });
 
-    } catch (error: any) {
-        console.error('Delete product error:', error);
+    } catch (error) {
+        console.error(error);
         return NextResponse.json({
-            error: error.message || 'Ошибка при удалении товара'
+            message: 'Ошибка при удалении товара'
         }, { status: 500 });
     }
 }
-
-
-
 
 export async function PUT(
     request: NextRequest,

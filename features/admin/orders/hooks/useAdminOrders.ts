@@ -43,9 +43,23 @@ export function useAdminOrders() {
         onSuccess: () => toast.success('Статус заказа обновлён'),
     });
 
+    const deleteOrder = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Не удалось удалить заказ');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
+            toast.success('Заказ успешно удалён');
+        },
+        onError: () => toast.error('Не удалось удалить заказ'),
+    });
+
     return {
         orders,
         isLoading,
+        deleteOrder:deleteOrder.mutate,
         updateOrderStatus: updateStatusMutation.mutate,
         isUpdating: updateStatusMutation.isPending,
     };
