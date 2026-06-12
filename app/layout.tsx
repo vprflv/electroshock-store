@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { Toaster } from 'sonner';
-import {SessionProvider} from "next-auth/react";   // ← Добавь этот импорт
+import {SessionProvider} from "next-auth/react";
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
