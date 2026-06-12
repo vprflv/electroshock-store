@@ -5,6 +5,7 @@ import { AdminOrder } from '@/features/admin/types/admin';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import {useEffect, useState} from "react";
+import {getProductImage} from "@/lib/utils/product-image-store";
 
 type OrderDetailModalProps = {
     order: AdminOrder | null;
@@ -120,19 +121,23 @@ export default function OrderDetailModal({ order, isOpen, onClose, onStatusChang
                         <div className="space-y-4">
                             {order.items.map((item) => (
                                 <div key={item.id} className="flex gap-4 bg-zinc-950 rounded-2xl p-5">
-                                    <div className="w-16 h-16 bg-zinc-800 rounded-xl overflow-hidden flex-shrink-0">
-                                        {item.product.images?.[0] && (
-                                            <img
-                                                src={item.product.images[0]}
-                                                alt={item.product.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        )}
+                                    {/* ← Вот это место обновляем */}
+                                    <div className="w-16 h-16 bg-zinc-800 rounded-xl overflow-hidden flex-shrink-0 relative">
+                                        <img
+                                            src={getProductImage(item.product.images?.[0])}
+                                            alt={item.product.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/placeholder-product.jpg';
+                                            }}
+                                        />
                                     </div>
+
                                     <div className="flex-1">
                                         <p className="font-medium">{item.product.name}</p>
                                         <p className="text-sm text-zinc-500">Арт. {item.product.article}</p>
                                     </div>
+
                                     <div className="text-right">
                                         <p className="font-semibold">{item.quantity} шт.</p>
                                         <p className="text-yellow-400">

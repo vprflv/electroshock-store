@@ -1,9 +1,27 @@
-// app/admin/layout.tsx
+'use client';
+
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, Package, ShoppingCart, Settings, LogOut } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+    const pathname = usePathname();
+
+    const navItems = [
+        { href: '/admin', label: 'Дашборд', icon: Home },
+        { href: '/admin/products', label: 'Товары', icon: Package },
+        { href: '/admin/orders', label: 'Заказы', icon: ShoppingCart },
+        { href: '/admin/settings', label: 'Настройки', icon: Settings },
+    ];
+
+    const isActive = (href: string) => {
+        if (href === '/admin') {
+            return pathname === '/admin';
+        }
+        return pathname === href || pathname.startsWith(href + '/');
+    };
+
     return (
         <div className="min-h-screen bg-zinc-950 text-white flex">
             {/* Sidebar */}
@@ -21,41 +39,30 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1">
-                    <Link
-                        href="/admin"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800 transition text-zinc-400 hover:text-white"
-                    >
-                        <Home className="w-5 h-5" />
-                        Дашборд
-                    </Link>
-
-                    <Link
-                        href="/admin/products"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-800 text-white"
-                    >
-                        <Package className="w-5 h-5" />
-                        Товары
-                    </Link>
-
-                    <Link
-                        href="/admin/orders"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800 transition text-zinc-400 hover:text-white"
-                    >
-                        <ShoppingCart className="w-5 h-5" />
-                        Заказы
-                    </Link>
-
-                    <Link
-                        href="/admin/settings"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800 transition text-zinc-400 hover:text-white"
-                    >
-                        <Settings className="w-5 h-5" />
-                        Настройки
-                    </Link>
+                    {navItems.map(({ href, label, icon: Icon }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+                                isActive(href)
+                                    ? 'bg-zinc-800 text-white'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                            }`}
+                        >
+                            <Icon className="w-5 h-5" />
+                            {label}
+                        </Link>
+                    ))}
                 </nav>
 
                 <div className="p-4 border-t border-zinc-800 mt-auto">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-zinc-800 transition text-red-400 hover:text-red-500">
+                    <button
+                        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-zinc-800 transition text-red-400 hover:text-red-500"
+                        onClick={() => {
+                            // TODO: добавить logout логику позже
+                            console.log('Logout clicked');
+                        }}
+                    >
                         <LogOut className="w-5 h-5" />
                         Выйти
                     </button>

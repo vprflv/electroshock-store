@@ -3,13 +3,15 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getProductImage } from "@/lib/utils/product-image-store";
+import {getProductImage} from "@/lib/utils/product-image-store";
+
 
 export default function ProductImage({ product }: { product: any }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isZoomed, setIsZoomed] = useState(false);
 
     const imagesCount = product.imagePaths?.length || product.images?.length || 0;
+
     const currentImage = getProductImage(product, currentIndex);
 
     const discount = product.oldPrice
@@ -22,9 +24,10 @@ export default function ProductImage({ product }: { product: any }) {
     return (
         <div className="space-y-6">
             {/* Основное фото */}
-            <div className="relative aspect-square bg-zinc-950 rounded-3xl overflow-hidden group cursor-zoom-in"
-                 onClick={() => setIsZoomed(true)}>
-
+            <div
+                className="relative aspect-square bg-zinc-950 rounded-3xl overflow-hidden group cursor-zoom-in"
+                onClick={() => setIsZoomed(true)}
+            >
                 <Image
                     src={currentImage}
                     alt={product.name}
@@ -32,6 +35,9 @@ export default function ProductImage({ product }: { product: any }) {
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover transition-all duration-700 group-hover:scale-105"
                     priority
+                    onError={(e) => {
+                        e.currentTarget.src = '/placeholder-product.jpg';
+                    }}
                 />
 
                 {discount > 0 && (
@@ -40,7 +46,6 @@ export default function ProductImage({ product }: { product: any }) {
                     </div>
                 )}
 
-                {/* Кнопки навигации */}
                 {imagesCount > 1 && (
                     <>
                         <button
@@ -60,7 +65,7 @@ export default function ProductImage({ product }: { product: any }) {
                 )}
             </div>
 
-            {/* Миниатюры — новая версия */}
+            {/* Миниатюры */}
             {imagesCount > 1 && (
                 <div className="flex gap-3 overflow-x-auto pb-4 pl-5 pt-5 snap-x snap-mandatory scrollbar-hide">
                     {Array.from({ length: imagesCount }).map((_, index) => {
@@ -83,10 +88,10 @@ export default function ProductImage({ product }: { product: any }) {
                                     fill
                                     sizes="80px"
                                     className="object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = '/placeholder-product.jpg';
+                                    }}
                                 />
-                                {isActive && (
-                                    <div className="absolute inset-0 ring-2 ring-yellow-400/60 rounded-2xl" />
-                                )}
                             </button>
                         );
                     })}

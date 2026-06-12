@@ -1,8 +1,39 @@
-// app/admin/page.tsx
+'use client';
+
 import Link from 'next/link';
-import { Package, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Package, TrendingUp, Users, DollarSign, Loader2 } from 'lucide-react';
+import { useAdminStats } from '@/features/admin/hooks/useAdminStats';
 
 export default function AdminDashboard() {
+    const { data: stats, isLoading, error } = useAdminStats();
+
+    const statCards = [
+        {
+            title: 'Товаров всего',
+            value: stats?.totalProducts ?? 0,
+            icon: Package,
+            color: 'text-yellow-400',
+        },
+        {
+            title: 'В наличии',
+            value: stats?.inStockProducts ?? 0,
+            icon: TrendingUp,
+            color: 'text-green-400',
+        },
+        {
+            title: 'Заказов сегодня',
+            value: stats?.ordersToday ?? 0,
+            icon: DollarSign,
+            color: 'text-yellow-400',
+        },
+        {
+            title: 'Активных брендов',
+            value: stats?.activeBrands ?? 0,
+            icon: Users,
+            color: 'text-yellow-400',
+        },
+    ];
+
     return (
         <div className="p-8">
             <div className="mb-10">
@@ -12,47 +43,34 @@ export default function AdminDashboard() {
 
             {/* Статистика */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400">Товаров всего</p>
-                            <p className="text-4xl font-bold mt-2">248</p>
+                {statCards.map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                        <div
+                            key={index}
+                            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 transition-all duration-200"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-zinc-400">{stat.title}</p>
+                                    {isLoading ? (
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <Loader2 className="w-8 h-8 animate-spin text-yellow-400" />
+                                        </div>
+                                    ) : (
+                                        <p className="text-4xl font-bold mt-2">
+                                            {stat.value.toLocaleString('ru-RU')}
+                                        </p>
+                                    )}
+                                </div>
+                                <Icon className={`w-10 h-10 ${stat.color}`} />
+                            </div>
                         </div>
-                        <Package className="w-10 h-10 text-yellow-400" />
-                    </div>
-                </div>
-
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400">В наличии</p>
-                            <p className="text-4xl font-bold mt-2 text-green-400">187</p>
-                        </div>
-                        <TrendingUp className="w-10 h-10 text-green-400" />
-                    </div>
-                </div>
-
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400">Заказов сегодня</p>
-                            <p className="text-4xl font-bold mt-2">12</p>
-                        </div>
-                        <DollarSign className="w-10 h-10 text-yellow-400" />
-                    </div>
-                </div>
-
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400">Активных брендов</p>
-                            <p className="text-4xl font-bold mt-2">18</p>
-                        </div>
-                        <Users className="w-10 h-10 text-yellow-400" />
-                    </div>
-                </div>
+                    );
+                })}
             </div>
 
+            {/* Быстрые действия */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Link
                     href="/admin/products"
@@ -72,6 +90,12 @@ export default function AdminDashboard() {
                     <p className="mt-2">Быстрое создание одного товара</p>
                 </Link>
             </div>
+
+            {error && (
+                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+                    Не удалось загрузить статистику. Попробуйте обновить страницу.
+                </div>
+            )}
         </div>
     );
 }

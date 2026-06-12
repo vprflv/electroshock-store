@@ -49,3 +49,11 @@ export type AdminOrder = Prisma.OrderGetPayload<{
         };
     };
 }>;
+
+
+export type AdminStats = {
+    totalProducts: number;
+    inStockProducts: number;
+    ordersToday: number;
+    activeBrands: number;
+};

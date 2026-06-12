@@ -1,18 +1,25 @@
-import {getImageUrl} from "@/lib/supabase-image";
-
+// lib/images.ts
+import { getImageUrl } from "@/lib/supabase-image";
 
 export const getProductImage = (product: any, index: number = 0): string => {
-    if (!product) return 'https://picsum.photos/id/106/600/600';
+    if (!product) {
+        return '/placeholder-product.jpg';
+    }
 
-    // Новый правильный способ
+    // Новый формат (рекомендуемый)
     if (product.imagePaths?.length > 0) {
         return getImageUrl(product.imagePaths[index]);
     }
 
-    // Старый picsum (на время перехода)
+    // Старый формат (на время перехода)
     if (product.images?.length > 0) {
-        return product.images[index];
+        return getImageUrl(product.images[index]);
     }
 
-    return 'https://picsum.photos/id/106/600/600';
+    return '/placeholder-product.jpg';
+};
+
+// Дополнительно — удобная функция для одного изображения
+export const getFirstProductImage = (product: any): string => {
+    return getProductImage(product, 0);
 };
