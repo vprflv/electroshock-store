@@ -1,6 +1,7 @@
 // middleware.ts
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+
 import { NextResponse } from 'next/server';
+import {auth} from "@/auth";
 
 export default auth((req) => {
     const { nextUrl } = req;

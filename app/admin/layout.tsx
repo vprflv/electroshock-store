@@ -3,7 +3,10 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Package, ShoppingCart, Settings, LogOut } from 'lucide-react';
+import { Home, Package, ShoppingCart, Settings } from 'lucide-react';
+import LogoutButton from "@/features/admin/logout/components/LogoutButton";
+import AdminHeader from "@/features/admin/header/components/AdminHeader";
+
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
@@ -16,9 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     ];
 
     const isActive = (href: string) => {
-        if (href === '/admin') {
-            return pathname === '/admin';
-        }
+        if (href === '/admin') return pathname === '/admin';
         return pathname === href || pathname.startsWith(href + '/');
     };
 
@@ -56,25 +57,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </nav>
 
                 <div className="p-4 border-t border-zinc-800 mt-auto">
-                    <button
-                        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-zinc-800 transition text-red-400 hover:text-red-500"
-                        onClick={() => {
-                            // TODO: добавить logout логику позже
-                            console.log('Logout clicked');
-                        }}
-                    >
-                        <LogOut className="w-5 h-5" />
-                        Выйти
-                    </button>
+                    <LogoutButton />
                 </div>
             </div>
 
             {/* Основной контент */}
             <div className="flex-1 flex flex-col">
-                <header className="h-16 border-b border-zinc-800 bg-zinc-900 px-8 flex items-center justify-between">
-                    <div className="font-medium">Администрирование</div>
-                    <div className="text-sm text-zinc-400">admin@electroshock.ru</div>
-                </header>
+                <AdminHeader />
 
                 <main className="flex-1 overflow-auto bg-zinc-950">
                     {children}

@@ -3,10 +3,12 @@
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -59,14 +61,23 @@ export default function AdminLogin() {
 
                     <div>
                         <label className="block text-sm mb-2 text-zinc-400">Пароль</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:border-yellow-400 outline-none"
-                            placeholder="••••••••"
-                            required
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:border-yellow-400 outline-none pr-12"
+                                placeholder="••••••••"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </div>
 
                     {error && <p className="text-red-500 text-center">{error}</p>}
@@ -79,11 +90,6 @@ export default function AdminLogin() {
                         {loading ? 'Входим...' : 'Войти'}
                     </button>
                 </form>
-
-                <p className="text-center text-xs text-zinc-500 mt-8">
-                    Тестовый аккаунт: <br />
-                    <strong>admin@electroshock.ru</strong> / <strong>admin123</strong>
-                </p>
             </div>
         </div>
     );
