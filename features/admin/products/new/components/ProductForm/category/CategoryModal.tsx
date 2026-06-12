@@ -29,6 +29,7 @@ export default function CategoryModal({ isOpen, onClose, onSuccess }: CategoryMo
                 const newCategory = await res.json();
                 onSuccess(newCategory);
                 setName('');
+                onClose();
             } else {
                 alert('Ошибка при создании категории');
             }
@@ -42,37 +43,56 @@ export default function CategoryModal({ isOpen, onClose, onSuccess }: CategoryMo
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/70 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-full max-w-md z-50">
-                    <Dialog.Title className="text-2xl font-bold mb-6">Новая категория</Dialog.Title>
+                <Dialog.Overlay className="fixed inset-0 bg-black/80 z-50" />
 
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Например: Электрошокеры"
-                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 mb-6 focus:border-yellow-400 outline-none"
-                        autoFocus
-                    />
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                    bg-zinc-900 border border-zinc-700 rounded-3xl md:rounded-2xl
+                    w-full max-w-md mx-4 md:mx-0 z-50 overflow-hidden">
 
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 py-3 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={!name.trim() || isSaving}
-                            className="flex-1 py-3 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 disabled:opacity-50 transition"
-                        >
-                            {isSaving ? 'Сохраняем...' : 'Создать категорию'}
-                        </button>
+                    {/* Header */}
+                    <div className="px-6 pt-6 pb-4 border-b border-zinc-700">
+                        <Dialog.Title className="text-xl md:text-2xl font-bold text-white">
+                            Новая категория
+                        </Dialog.Title>
                     </div>
 
+                    <div className="p-6 space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                Название категории
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Например: Электрошокеры"
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4
+                                           text-white placeholder:text-zinc-500 focus:border-yellow-400 outline-none text-base"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={onClose}
+                                className="flex-1 py-3.5 border border-zinc-700 rounded-2xl text-white hover:bg-zinc-800 transition font-medium"
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={!name.trim() || isSaving}
+                                className="flex-1 py-3.5 bg-yellow-400 hover:bg-yellow-500 disabled:bg-zinc-700
+                                           text-black font-semibold rounded-2xl transition disabled:opacity-50"
+                            >
+                                {isSaving ? 'Сохраняем...' : 'Создать'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Кнопка закрытия */}
                     <Dialog.Close asChild>
-                        <button className="absolute top-4 right-4 text-zinc-400 hover:text-white">
+                        <button className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white transition">
                             <X className="w-5 h-5" />
                         </button>
                     </Dialog.Close>

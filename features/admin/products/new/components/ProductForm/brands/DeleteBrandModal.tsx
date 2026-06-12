@@ -55,44 +55,57 @@ export default function DeleteBrandModal({ isOpen, onClose, brands, onDeleted }:
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/70 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-full max-w-md z-50 max-h-[90vh] flex flex-col">
-                    <Dialog.Title className="text-xl font-bold mb-6 flex items-center gap-2 text-red-400">
-                        <Trash2 className="w-5 h-5" />
-                        Удалить бренды
-                    </Dialog.Title>
+                <Dialog.Overlay className="fixed inset-0 bg-black/80 z-50" />
 
-                    <div className="flex-1 overflow-auto pr-2 space-y-2 mb-6">
-                        {brands.length === 0 && (
-                            <p className="text-zinc-400 py-8 text-center">Нет брендов</p>
-                        )}
-                        {brands.map(brand => (
-                            <label
-                                key={brand.id}
-                                className="flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-xl cursor-pointer transition"
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.includes(brand.id)}
-                                    onChange={() => toggleSelect(brand.id)}
-                                    className="w-5 h-5 accent-red-600"
-                                />
-                                <span className="text-base">{brand.name}</span>
-                            </label>
-                        ))}
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                    bg-zinc-900 border border-zinc-700 rounded-3xl md:rounded-2xl
+                    w-full max-w-md mx-4 z-50 max-h-[90vh] flex flex-col overflow-hidden">
+
+                    {/* Header */}
+                    <div className="px-6 pt-6 pb-4 border-b border-zinc-700 flex items-center gap-3">
+                        <Trash2 className="w-6 h-6 text-red-500" />
+                        <Dialog.Title className="text-xl font-bold text-white">
+                            Удалить бренды
+                        </Dialog.Title>
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-zinc-700">
+                    {/* Список брендов */}
+                    <div className="flex-1 overflow-auto p-6 space-y-2">
+                        {brands.length === 0 ? (
+                            <p className="text-zinc-400 py-12 text-center">Нет брендов для удаления</p>
+                        ) : (
+                            brands.map(brand => (
+                                <label
+                                    key={brand.id}
+                                    className="flex items-center gap-3 p-4 hover:bg-zinc-800 rounded-2xl cursor-pointer transition group"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(brand.id)}
+                                        onChange={() => toggleSelect(brand.id)}
+                                        className="w-5 h-5 accent-red-600 rounded"
+                                    />
+                                    <span className="text-base text-white flex-1">
+                                        {brand.name}
+                                    </span>
+                                </label>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-zinc-700 p-6 flex gap-3">
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition"
+                            className="flex-1 py-4 border border-zinc-700 rounded-2xl text-white hover:bg-zinc-800 transition font-medium"
                         >
                             Отмена
                         </button>
                         <button
                             onClick={handleDelete}
                             disabled={selectedIds.length === 0 || isDeleting}
-                            className="flex-1 py-3 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 rounded-lg font-medium transition"
+                            className="flex-1 py-4 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700
+                                       text-white font-semibold rounded-2xl transition disabled:opacity-50"
                         >
                             {isDeleting
                                 ? `Удаляем (${selectedIds.length})...`
@@ -100,9 +113,10 @@ export default function DeleteBrandModal({ isOpen, onClose, brands, onDeleted }:
                         </button>
                     </div>
 
+                    {/* Кнопка закрытия */}
                     <Dialog.Close asChild>
-                        <button className="absolute top-4 right-4 text-zinc-400 hover:text-white">
-                            <X className="w-5 h-5" />
+                        <button className="absolute top-5 right-5 p-2 text-zinc-400 hover:text-white transition">
+                            <X className="w-6 h-6" />
                         </button>
                     </Dialog.Close>
                 </Dialog.Content>
