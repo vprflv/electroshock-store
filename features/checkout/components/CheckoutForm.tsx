@@ -68,7 +68,7 @@ export default function CheckoutForm() {
                             <input
                                 type="email"
                                 name="email"
-                                placeholder="Email "
+                                placeholder="Email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
@@ -78,49 +78,43 @@ export default function CheckoutForm() {
 
                     {/* Доставка */}
                     <div>
-                        <h2 className="text-2xl font-semibold mb-4">Доставка</h2>
-                        <div className="flex gap-4 mb-5">
-                            <label className="flex items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 cursor-pointer hover:border-yellow-400 transition-colors flex-1">
-                                <input
-                                    type="checkbox"
-                                    checked={deliveryNeeded}
-                                    onChange={(e) => setDeliveryNeeded(e.target.checked)}
-                                />
-                                <span>Нужна доставка</span>
-                            </label>
+                        <h2 className="text-2xl font-semibold mb-6">Способ получения</h2>
+
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <button
+                                type="button"
+                                onClick={() => setDeliveryType('courier')}
+                                className={`py-4 rounded-2xl border transition-all text-base font-medium
+                ${deliveryType === 'courier'
+                                    ? 'border-yellow-400 bg-yellow-400/10 text-white'
+                                    : 'border-zinc-700 hover:border-zinc-600'}`}
+                            >
+                                Курьер
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setDeliveryType('pickup')}
+                                className={`py-4 rounded-2xl border transition-all text-base font-medium
+                ${deliveryType === 'pickup'
+                                    ? 'border-yellow-400 bg-yellow-400/10 text-white'
+                                    : 'border-zinc-700 hover:border-zinc-600'}`}
+                            >
+                               Самовывоз
+                            </button>
                         </div>
 
-                        {deliveryNeeded && (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeliveryType('courier')}
-                                        className={`py-4 rounded-2xl border transition-all text-base ${deliveryType === 'courier' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
-                                    >
-                                        Курьер
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeliveryType('pickup')}
-                                        className={`py-4 rounded-2xl border transition-all text-base ${deliveryType === 'pickup' ? 'border-yellow-400 bg-yellow-400/10' : 'border-zinc-700'}`}
-                                    >
-                                        Самовывоз
-                                    </button>
-                                </div>
-
-                                {deliveryType === 'courier' && (
-                                    <input
-                                        type="text"
-                                        name="address"
-                                        placeholder="Адрес доставки *"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
-                                    />
-                                )}
-                            </div>
+                        {/* Поле адреса показывается только при выборе курьера */}
+                        {deliveryType === 'courier' && (
+                            <input
+                                type="text"
+                                name="address"
+                                placeholder="Адрес доставки *"
+                                value={formData.address}
+                                onChange={handleChange}
+                                required
+                                className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
+                            />
                         )}
                     </div>
 
@@ -134,6 +128,15 @@ export default function CheckoutForm() {
                             onChange={handleChange}
                             rows={4}
                             className="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-5 py-4 text-base focus:outline-none focus:border-yellow-400"
+                        />
+                    </div>
+
+                    {/* ==================== MOBILE ORDER SUMMARY ==================== */}
+                    <div className="lg:hidden pt-4 pb-6 border-t border-zinc-800">
+                        <OrderSummary
+                            items={checkout.items}
+                            totalPrice={checkout.totalPrice}
+                            onRemove={checkout.removeFromCart}
                         />
                     </div>
 
@@ -153,10 +156,21 @@ export default function CheckoutForm() {
                         </label>
                     </div>
 
+                    {/* Кнопка для мобильных */}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting || !isFormValid}
+                        className="lg:hidden w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 disabled:cursor-not-allowed text-black font-semibold text-xl py-5 rounded-3xl transition-colors mt-2"
+                    >
+                        {isSubmitting
+                            ? 'Оформляем заказ...'
+                            : `Подтвердить заказ — ${checkout.totalPrice.toLocaleString('ru')} ₽`}
+                    </button>
+
                     {/* Кнопка для десктопа */}
                     <button
                         type="submit"
-                        disabled={isSubmitting || !agreePolicy}
+                        disabled={isSubmitting || !isFormValid}
                         className="hidden lg:block w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 disabled:cursor-not-allowed text-black font-semibold text-xl py-5 rounded-3xl transition-colors"
                     >
                         {isSubmitting
@@ -166,8 +180,8 @@ export default function CheckoutForm() {
                 </form>
             </div>
 
-            {/* Правая колонка */}
-            <div className="lg:col-span-2">
+            {/* Правая колонка — только на больших экранах */}
+            <div className="hidden lg:block lg:col-span-2">
                 <OrderSummary
                     items={checkout.items}
                     totalPrice={checkout.totalPrice}

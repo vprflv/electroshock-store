@@ -48,6 +48,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                                             src={getProductImage(item)}
                                             alt={item.name}
                                             fill
+                                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 280px"
                                             className="object-cover"
                                         />
                                     </div>
