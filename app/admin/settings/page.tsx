@@ -10,69 +10,89 @@ export default function AdminSettingsPage() {
     const { users, isLoading, deleteUser } = useAdminUsers();
 
     const handleDelete = (id: string, name: string) => {
-        if (confirm(`Удалить пользователя ${name}?`)) {
+        if (confirm(`Удалить администратора ${name}?`)) {
             deleteUser(id);
         }
     };
 
     return (
-        <div className="p-8">
-            <div className="mb-10 flex justify-between items-end">
+        <div className="p-4 md:p-8">
+            {/* Header */}
+            <div className="mb-8 md:mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-bold">Настройки</h1>
-                    <p className="text-zinc-400 mt-2">Управление администраторами</p>
+                    <h1 className="text-2xl md:text-4xl font-bold">Настройки</h1>
+                    <p className="text-zinc-400 mt-1 md:mt-2 text-sm md:text-base">
+                        Управление администраторами
+                    </p>
                 </div>
+
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-3 rounded-2xl transition"
+                    className="flex items-center justify-center gap-3 bg-yellow-400 hover:bg-yellow-500
+                               text-black font-semibold px-6 py-3.5 rounded-2xl transition w-full sm:w-auto"
                 >
                     <UserPlus className="w-5 h-5" />
                     Добавить администратора
                 </button>
             </div>
 
+            {/* Таблица */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                    <tr className="border-b border-zinc-800">
-                        <th className="px-8 py-5 text-left">Имя</th>
-                        <th className="px-8 py-5 text-left">Email</th>
-                        <th className="px-8 py-5 text-left">Роль</th>
-                        <th className="px-8 py-5 text-left">Дата создания</th>
-                        <th className="px-8 py-5 text-center">Действия</th>
-                    </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-800">
-                    {isLoading ? (
-                        <tr><td colSpan={5} className="py-12 text-center">Загрузка...</td></tr>
-                    ) : users.length === 0 ? (
-                        <tr><td colSpan={5} className="py-12 text-center text-zinc-500">Администраторов пока нет</td></tr>
-                    ) : (
-                        users.map((user: any) => (
-                            <tr key={user.id} className="hover:bg-zinc-800/50 transition">
-                                <td className="px-8 py-5 font-medium">{user.name}</td>
-                                <td className="px-8 py-5 text-zinc-400">{user.email}</td>
-                                <td className="px-8 py-5">
-                                        <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
-                                            ADMIN
-                                        </span>
-                                </td>
-                                <td className="px-8 py-5 text-zinc-400">
-                                    {new Date(user.createdAt).toLocaleDateString('ru-RU')}
-                                </td>
-                                <td className="px-8 py-5 text-center">
-                                    <button
-                                        onClick={() => handleDelete(user.id, user.name)}
-                                        className="text-red-400 hover:text-red-500 transition p-2"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[700px]">
+                        <thead>
+                        <tr className="border-b border-zinc-800">
+                            <th className="px-6 md:px-8 py-5 text-left text-sm font-medium text-zinc-400">Имя</th>
+                            <th className="px-6 md:px-8 py-5 text-left text-sm font-medium text-zinc-400">Email</th>
+                            <th className="px-6 md:px-8 py-5 text-left text-sm font-medium text-zinc-400">Роль</th>
+                            <th className="px-6 md:px-8 py-5 text-left text-sm font-medium text-zinc-400">Дата создания</th>
+                            <th className="px-6 md:px-8 py-5 text-center text-sm font-medium text-zinc-400">Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800">
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan={5} className="py-16 text-center text-zinc-400">
+                                    Загрузка администраторов...
                                 </td>
                             </tr>
-                        ))
-                    )}
-                    </tbody>
-                </table>
+                        ) : users.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="py-16 text-center text-zinc-500">
+                                    Администраторов пока нет
+                                </td>
+                            </tr>
+                        ) : (
+                            users.map((user: any) => (
+                                <tr key={user.id} className="hover:bg-zinc-800/60 transition">
+                                    <td className="px-6 md:px-8 py-5 font-medium text-white">
+                                        {user.name}
+                                    </td>
+                                    <td className="px-6 md:px-8 py-5 text-zinc-400">
+                                        {user.email}
+                                    </td>
+                                    <td className="px-6 md:px-8 py-5">
+                                            <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
+                                                ADMIN
+                                            </span>
+                                    </td>
+                                    <td className="px-6 md:px-8 py-5 text-zinc-400 text-sm">
+                                        {new Date(user.createdAt).toLocaleDateString('ru-RU')}
+                                    </td>
+                                    <td className="px-6 md:px-8 py-5 text-center">
+                                        <button
+                                            onClick={() => handleDelete(user.id, user.name)}
+                                            className="p-3 hover:bg-zinc-800 rounded-xl text-red-400 hover:text-red-500 transition"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <AddAdminModal

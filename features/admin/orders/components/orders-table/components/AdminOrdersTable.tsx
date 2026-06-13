@@ -75,10 +75,10 @@ export default function AdminOrdersTable() {
             <div className="p-4 md:p-6">
                 <AdminOrdersHeader totalOrders={orders.length} />
 
-                <AdminOrdersSearch
-                    value={globalFilter}
-                    onChange={setGlobalFilter}
-                />
+                {/*<AdminOrdersSearch*/}
+                {/*    value={globalFilter}*/}
+                {/*    onChange={setGlobalFilter}*/}
+                {/*/>*/}
 
                 <AdminOrdersDataTable table={table} />
 
