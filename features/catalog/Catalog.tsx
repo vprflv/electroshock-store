@@ -1,3 +1,4 @@
+// features/catalog/Catalog.tsx
 'use client';
 
 import { useMemo, useEffect, useRef } from 'react';
@@ -16,11 +17,12 @@ import ProductCardSkeleton from "./product/ProductCardSkeleton";
 import { useCatalogFilters } from "./hooks/useCatalogFilters";
 import getPaginationPages from "@/lib/utils/pagination";
 import { usePrefetchProducts } from "@/features/catalog/hooks/usePrefetchProducts";
-import SearchBar from "@/features/search/SearchBar";   // ← добавили импорт
+import SearchBar from "@/features/search/SearchBar";
+import PriceAndSortFilters from "@/features/catalog/filters/components/PriceAndSortFilters";
 
 type CatalogProps = {
     searchTerm: string;
-    onSearchChange: (value: string) => void;   // ← добавили
+    onSearchChange: (value: string) => void;
 };
 
 export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
@@ -74,7 +76,6 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
         if (page < 1 || page > totalPages) return;
 
         const newParams = new URLSearchParams(searchParams.toString());
-
         if (page === 1) {
             newParams.delete('page');
         } else {
@@ -84,7 +85,7 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
         router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
     };
 
-    // Автосброс страницы
+    // Автосброс страницы при изменении фильтров
     const prevFiltersRef = useRef({
         categories: 0,
         brands: 0,
@@ -127,24 +128,13 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
             price: [...priceRange],
             sort: sortBy
         };
-    }, [
-        selectedCategoryIds.length,
-        selectedBrandIds.length,
-        inStockOnly,
-        searchTerm,
-        priceRange,
-        sortBy,
-        currentPage,
-        searchParams,
-        pathname,
-        router
-    ]);
+    }, [selectedCategoryIds.length, selectedBrandIds.length, inStockOnly, searchTerm, priceRange, sortBy, currentPage, searchParams, pathname, router]);
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-10">
-            <div className="flex flex-col lg:flex-row gap-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
 
-                {/* Фильтры */}
+                {/* Блок фильтров */}
                 <div className="lg:w-80 flex-shrink-0">
                     <Filters
                         selectedCategoryIds={selectedCategoryIds}
@@ -163,9 +153,9 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                     />
                 </div>
 
-                {/* Основная область каталога */}
+                {/* Основная часть каталога */}
                 <div className="flex-1">
-                    {/* Поиск — добавили сюда */}
+                    {/* Поиск */}
                     <div className="mb-8">
                         <SearchBar
                             value={searchTerm}
@@ -174,19 +164,27 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                         />
                     </div>
 
+                    {/* Сортировка + Цена — справа */}
+                    <div className="flex justify-end mb-8">
+                        <PriceAndSortFilters
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
+                            priceRange={priceRange}
+                            setPriceRange={setPriceRange}
+                        />
+                    </div>
+
                     {/* Заголовок + статистика */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                        <h2 className="text-4xl font-semibold">Каталог товаров</h2>
-                        <p className="text-zinc-400">
+                        <h2 className="text-3xl md:text-4xl font-semibold">Каталог товаров</h2>
+                        <p className="text-zinc-400 text-sm md:text-base">
                             Показано: <span className="text-white font-medium">
-            {productsLoading
-                ? '—'
-                : Math.min(currentPage * itemsPerPage, filteredProducts.length)
-            }
-        </span> из {filteredProducts.length}
+                                {productsLoading ? '—' : Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+                            </span> из {filteredProducts.length}
                         </p>
                     </div>
 
+                    {/* Товары */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {productsLoading ? (
                             Array.from({ length: 6 }).map((_, index) => (
@@ -241,7 +239,7 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                     {!productsLoading && filteredProducts.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-2xl text-zinc-400 mb-2">Ничего не найдено 😔</p>
-                            <p className="text-zinc-500">Попробуйте изменить поиск или фильтры</p>
+                            <p className="text-zinc-500">Попробуйте изменить параметры поиска или фильтры</p>
                         </div>
                     )}
                 </div>

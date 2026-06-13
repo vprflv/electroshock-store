@@ -31,7 +31,7 @@ export default function HeaderDesktop({
                 </a>
 
                 {/* Кнопка "Перезвоните мне" рядом с номером */}
-                <CallbackButton variant="header" />
+                <CallbackButton />
 
             </div>
 
@@ -39,11 +39,27 @@ export default function HeaderDesktop({
             <div className="max-w-7xl mx-auto px-6 pb-5">
                 <div className="flex items-center h-16">
 
-                    {/* Логотип */}
-                    <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-                        <Shield className="w-9 h-9 text-yellow-400" />
-                        <div className="font-bold text-2xl tracking-tighter">
-                            ELECTRO<span className="text-yellow-400">SHOCK</span>
+
+                    <Link href="/" className="flex mb-8 items-center gap-3 flex-shrink-0 group relative">
+
+                        {/* Оса — независимая и всегда в нужном положении */}
+                        <img
+                            src="/logo.png"
+                            alt="ElectroShock"
+                            className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain
+                   drop-shadow-[0_0_2px_#facc15]
+                   absolute -top-6 sm:-top-8 md:-top-10 lg:-top-12 xl:-top-14
+                   -left-2 sm:-left-3 md:-left-4 transition-all duration-300 z-10"
+                        />
+
+                        {/* Текст — остаётся на месте */}
+                        <div className="flex ml-8 flex-col pt-4 sm:pt-5 md:pt-6">
+                            <div className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-yellow-400 leading-none">
+                                ОСА
+                            </div>
+                            <div className="text-xs sm:text-sm text-zinc-500 font-medium tracking-widest">
+                                ОРУЖИЕ ДЛЯ САМООБОРОНЫ
+                            </div>
                         </div>
                     </Link>
 

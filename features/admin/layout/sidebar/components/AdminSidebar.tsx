@@ -39,7 +39,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                     <div className="w-9 h-9 bg-yellow-400 rounded-xl flex items-center justify-center">
                         <span className="text-black font-bold text-xl">⚡</span>
                     </div>
-                    <div>
+                    <div className={"cursor-pointer"}>
                         <div className="font-semibold text-lg">ElectroShock</div>
                         <div className="text-xs text-zinc-500">Админ-панель</div>
                     </div>
