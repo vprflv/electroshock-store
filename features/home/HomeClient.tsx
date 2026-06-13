@@ -12,6 +12,8 @@ import CartModal from "@/features/cart/CartModal";
 export default function HomeClient() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
 
     const debouncedSearchTerm = useDebounce(searchTerm, 350);
     const { totalItems } = useCart();
@@ -20,17 +22,23 @@ export default function HomeClient() {
     const handleCartOpen = () => setIsCartOpen(true);
     const handleCartClose = () => setIsCartOpen(false);
 
+
     return (
         <div className="min-h-screen bg-zinc-950 text-white">
 
             <Navbar
                 onCartClick={handleCartOpen}
+                onFiltersClick={() => setIsFiltersOpen(true)}
+                isFiltersOpen={isFiltersOpen}
+                setIsFiltersOpen={setIsFiltersOpen}
                 isMounted={isMounted}
             />
 
             <Catalog
                 searchTerm={debouncedSearchTerm}
                 onSearchChange={setSearchTerm}
+                isFiltersOpen={isFiltersOpen}
+                setIsFiltersOpen={setIsFiltersOpen}
             />
 
             <footer className="bg-black py-10 text-center text-zinc-500 border-t border-zinc-900 mt-12">

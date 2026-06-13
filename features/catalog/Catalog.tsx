@@ -11,9 +11,11 @@ import getPaginationPages from "@/lib/utils/pagination";
 type CatalogProps = {
     searchTerm: string;
     onSearchChange: (value: string) => void;
+    isFiltersOpen: boolean;
+    setIsFiltersOpen: (open: boolean) => void;
 };
 
-export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
+export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, setIsFiltersOpen }: CatalogProps) {
     const {
         productsLoading,
         paginatedProducts,
@@ -43,8 +45,9 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
             <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
 
-                {/* Блок фильтров */}
-                <div className="lg:w-80 flex-shrink-0">
+                {/* Блок фильтров — скрываем на мобильных */}
+                {/* Десктопный сайдбар */}
+                <div className="hidden lg:block lg:w-80 flex-shrink-0">
                     <Filters
                         selectedCategoryIds={selectedCategoryIds}
                         setSelectedCategoryIds={setSelectedCategoryIds}
@@ -59,9 +62,30 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                         onReset={resetFilters}
                         availableBrands={availableBrands}
                         availableCategories={availableCategories}
+                        // isOpen и onClose НЕ передаём — они только для мобильного
                     />
                 </div>
 
+                {/* МОБИЛЬНЫЙ DRAWER — скрываем на больших экранах */}
+                <div className="lg:hidden">
+                    <Filters
+                        selectedCategoryIds={selectedCategoryIds}
+                        setSelectedCategoryIds={setSelectedCategoryIds}
+                        selectedBrandIds={selectedBrandIds}
+                        setSelectedBrandIds={setSelectedBrandIds}
+                        priceRange={priceRange}
+                        setPriceRange={setPriceRange}
+                        inStockOnly={inStockOnly}
+                        setInStockOnly={setInStockOnly}
+                        sortBy={sortBy}
+                        setSortBy={setSortBy}
+                        onReset={resetFilters}
+                        availableBrands={availableBrands}
+                        availableCategories={availableCategories}
+                        isOpen={isFiltersOpen}
+                        onClose={() => setIsFiltersOpen(false)}
+                    />
+                </div>
                 {/* Основная часть каталога */}
                 <div className="flex-1">
                     {/* Поиск */}
