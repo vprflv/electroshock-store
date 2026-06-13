@@ -45,7 +45,7 @@ export default function HeaderMobile({
                     onClick={() => setIsMenuOpen(true)}
                     className="p-2 text-zinc-300 hover:text-white transition-colors"
                 >
-                    <Menu className="w-7 h-7" />
+                    <Menu className="w-7 h-7 text-yellow-400" />
                 </button>
             </div>
 

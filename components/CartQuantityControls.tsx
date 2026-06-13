@@ -33,9 +33,11 @@ export default function CartQuantityControls({
         return (
             <button
                 onClick={handleAdd}
-                className={`w-full mt-5 bg-white hover:bg-yellow-400 hover:text-white active:bg-yellow-500 
-                    text-black font-semibold py-4 rounded-4xl 
-                    flex items-center justify-center gap-3 transition-all text-base ${className}`}
+                className={`w-full mt-5 bg-zinc-950 hover:bg-zinc-900 
+                border-2 border-yellow-400 hover:border-yellow-300
+                text-yellow-600 hover:text-yellow-200 font-semibold py-4 rounded-4xl 
+                flex items-center justify-center gap-3 transition-all text-base 
+                active:scale-[0.97] ${className}`}
             >
                 <ShoppingCart className="w-5 h-5" />
                 Добавить в корзину

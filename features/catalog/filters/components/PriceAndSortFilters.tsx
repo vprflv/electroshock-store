@@ -70,7 +70,7 @@ export default function PriceAndSortFilters({
                 </button>
 
                 {isSortOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-2xl p-2 z-50 shadow-2xl">
+                    <div className="absolute top-full left-2 right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-2xl p-2 z-50 shadow-2xl">
                         {Object.entries(sortLabels).map(([value, label]) => (
                             <button
                                 key={value}

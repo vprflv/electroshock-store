@@ -22,13 +22,12 @@ export default function HeaderDesktop({
             <div className="max-w-7xl pb-10 mx-auto px-6 py-3 flex items-center justify-end gap-8 text-sm">
 
                 {/* Номер телефона */}
-                <a
-                    href="tel:+78005553535"
+                <p
                     className="flex items-center gap-2 hover:text-yellow-400 transition-colors"
                 >
-                    <Phone className="w-5 h-5" />
+                    <Phone className="w-5 h-5 hover:text-yellow-400" />
                     <span className="font-medium">8 (800) 555-35-35</span>
-                </a>
+                </p>
 
                 {/* Кнопка "Перезвоните мне" рядом с номером */}
                 <CallbackButton />

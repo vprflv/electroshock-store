@@ -88,34 +88,38 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
                 </div>
                 {/* Основная часть каталога */}
                 <div className="flex-1">
+
                     {/* Поиск */}
                     <div className="mb-8">
                         <SearchBar
                             value={searchTerm}
                             onChange={onSearchChange}
-                            className="w-full max-w-2xl mx-auto"
+                            className="w-full max-w-xl"
                         />
                     </div>
 
-                    {/* Сортировка + Цена */}
-                    <div className="flex justify-end mb-8">
-                        <PriceAndSortFilters
-                            sortBy={sortBy}
-                            setSortBy={setSortBy}
-                            priceRange={priceRange}
-                            setPriceRange={setPriceRange}
-                        />
-                    </div>
+                    {/* Сортировка + статистика в одном ряду */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 
-                    {/* Заголовок + статистика */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                        <h2 className="text-3xl md:text-4xl font-semibold">Каталог товаров</h2>
-                        <p className="text-zinc-400 text-sm md:text-base">
+                        {/* Левая часть — Сортировка и фильтры цены */}
+                        <div>
+                            <PriceAndSortFilters
+                                sortBy={sortBy}
+                                setSortBy={setSortBy}
+                                priceRange={priceRange}
+                                setPriceRange={setPriceRange}
+                            />
+                        </div>
+
+                        {/* Правая часть — Статистика (скрываем на мобильных) */}
+                        <p className="hidden md:block text-zinc-400 text-sm md:text-base whitespace-nowrap">
                             Показано: <span className="text-white font-medium">
-                                {productsLoading ? '—' : Math.min(currentPage * itemsPerPage, filteredProducts.length)}
-                            </span> из {filteredProducts.length}
+            {productsLoading ? '—' : Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+        </span> из {filteredProducts.length}
                         </p>
+
                     </div>
+
 
                     {/* Сетка товаров */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
