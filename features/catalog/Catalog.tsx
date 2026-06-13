@@ -1,24 +1,12 @@
-// features/catalog/Catalog.tsx
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-
-import {
-    useAllLightProducts,
-    useSearchProducts,
-    useCategories,
-    useBrands
-} from '@/hooks/queries/products';
-
+import { useCatalog } from './hooks/useCatalog';
 import Filters from "./filters/Filters";
 import ProductCard from "./product/ProductCard";
 import ProductCardSkeleton from "./product/ProductCardSkeleton";
-import { useCatalogFilters } from "./hooks/useCatalogFilters";
-import getPaginationPages from "@/lib/utils/pagination";
-import { usePrefetchProducts } from "@/features/catalog/hooks/usePrefetchProducts";
 import SearchBar from "@/features/search/SearchBar";
 import PriceAndSortFilters from "@/features/catalog/filters/components/PriceAndSortFilters";
+import getPaginationPages from "@/lib/utils/pagination";
 
 type CatalogProps = {
     searchTerm: string;
@@ -26,21 +14,16 @@ type CatalogProps = {
 };
 
 export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-
-    const currentPage = parseInt(searchParams.get('page') || '1');
-
-    // Запросы данных
-    const { data: allProducts = [] } = useAllLightProducts();
-    const { data: searchedProducts = [], isLoading: productsLoading } = useSearchProducts(searchTerm);
-    const { data: categories = [] } = useCategories();
-    const { data: brands = [] } = useBrands();
-
-    const productsAfterSearch = searchTerm.trim() ? searchedProducts : allProducts;
-
     const {
+        productsLoading,
+        paginatedProducts,
+        filteredProducts,
+        totalPages,
+        currentPage,
+        goToPage,
+        itemsPerPage,
+
+        // Фильтры
         selectedCategoryIds,
         setSelectedCategoryIds,
         selectedBrandIds,
@@ -52,83 +35,9 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
         sortBy,
         setSortBy,
         resetFilters,
-        filteredProducts,
         availableCategories,
         availableBrands,
-    } = useCatalogFilters({
-        productsToShow: productsAfterSearch,
-        availableCategories: categories,
-        availableBrands: brands,
-    });
-
-    const itemsPerPage = 9;
-
-    const paginatedProducts = useMemo(() => {
-        const start = (currentPage - 1) * itemsPerPage;
-        return filteredProducts.slice(start, start + itemsPerPage);
-    }, [filteredProducts, currentPage, itemsPerPage]);
-
-    usePrefetchProducts(paginatedProducts);
-
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-    const goToPage = (page: number) => {
-        if (page < 1 || page > totalPages) return;
-
-        const newParams = new URLSearchParams(searchParams.toString());
-        if (page === 1) {
-            newParams.delete('page');
-        } else {
-            newParams.set('page', page.toString());
-        }
-
-        router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
-    };
-
-    // Автосброс страницы при изменении фильтров
-    const prevFiltersRef = useRef({
-        categories: 0,
-        brands: 0,
-        inStock: false,
-        search: '',
-        price: [0, 20000],
-        sort: 'popular'
-    });
-
-    useEffect(() => {
-        const hasActiveFilters =
-            selectedCategoryIds.length > 0 ||
-            selectedBrandIds.length > 0 ||
-            inStockOnly ||
-            searchTerm.trim() !== '' ||
-            priceRange[0] !== 0 ||
-            priceRange[1] !== 20000 ||
-            sortBy !== 'popular';
-
-        const filtersChanged =
-            selectedCategoryIds.length !== prevFiltersRef.current.categories ||
-            selectedBrandIds.length !== prevFiltersRef.current.brands ||
-            inStockOnly !== prevFiltersRef.current.inStock ||
-            searchTerm.trim() !== prevFiltersRef.current.search ||
-            priceRange[0] !== prevFiltersRef.current.price[0] ||
-            priceRange[1] !== prevFiltersRef.current.price[1] ||
-            sortBy !== prevFiltersRef.current.sort;
-
-        if (hasActiveFilters && filtersChanged && currentPage !== 1) {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.delete('page');
-            router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
-        }
-
-        prevFiltersRef.current = {
-            categories: selectedCategoryIds.length,
-            brands: selectedBrandIds.length,
-            inStock: inStockOnly,
-            search: searchTerm.trim(),
-            price: [...priceRange],
-            sort: sortBy
-        };
-    }, [selectedCategoryIds.length, selectedBrandIds.length, inStockOnly, searchTerm, priceRange, sortBy, currentPage, searchParams, pathname, router]);
+    } = useCatalog({ searchTerm });
 
     return (
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
@@ -164,7 +73,7 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                         />
                     </div>
 
-                    {/* Сортировка + Цена — справа */}
+                    {/* Сортировка + Цена */}
                     <div className="flex justify-end mb-8">
                         <PriceAndSortFilters
                             sortBy={sortBy}
@@ -184,7 +93,7 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                         </p>
                     </div>
 
-                    {/* Товары */}
+                    {/* Сетка товаров */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {productsLoading ? (
                             Array.from({ length: 6 }).map((_, index) => (
@@ -236,6 +145,7 @@ export default function Catalog({ searchTerm, onSearchChange }: CatalogProps) {
                         </div>
                     )}
 
+                    {/* Пустое состояние */}
                     {!productsLoading && filteredProducts.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-2xl text-zinc-400 mb-2">Ничего не найдено 😔</p>
