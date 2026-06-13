@@ -13,21 +13,18 @@ import ProductFeatures from "./components/ProductFeatures";
 import CartModal from "@/features/cart/CartModal";
 import ProductDetailSkeleton from "@/features/catalog/product/detail-product/ProductDetailSkeleton";
 
-
 export default function ProductPageClient({ id }: { id: number }) {
     const router = useRouter();
     const [isCartOpen, setIsCartOpen] = useState(false);
 
     const { data: product, isLoading, error } = useProduct(id);
 
-    // ←←← Главное изменение
     if (isLoading || !product) {
-        return(<div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-            <ProductDetailSkeleton />
-        </div>)
-
-
-
+        return (
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+                <ProductDetailSkeleton />
+            </div>
+        );
     }
 
     if (error) {
@@ -55,7 +52,10 @@ export default function ProductPageClient({ id }: { id: number }) {
             {/* Верхняя панель */}
             <div className="border-b border-zinc-800 bg-zinc-900 sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
-                    <button onClick={() => router.back()} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+                    >
                         ← Назад в каталог
                     </button>
                     <div className="text-sm text-zinc-500 font-mono">Арт. {product.article}</div>
@@ -63,16 +63,25 @@ export default function ProductPageClient({ id }: { id: number }) {
             </div>
 
             <div className="max-w-6xl mx-auto px-6 pt-10">
+                {/* Основная сетка: Галерея + Информация */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
                     <ProductImage product={normalizedProduct} />
+
+                    {/* Правая колонка */}
                     <div className="flex flex-col">
                         <ProductInfo product={normalizedProduct} />
                         <ProductSpecs product={normalizedProduct} />
-                        <ProductDescription product={normalizedProduct} />
-                        <ProductCartSection product={normalizedProduct} onOpenCart={() => setIsCartOpen(true)} />
-
-                        <ProductFeatures product={normalizedProduct} />
+                        <ProductCartSection
+                            product={normalizedProduct}
+                            onOpenCart={() => setIsCartOpen(true)}
+                        />
+                        {/*<ProductFeatures product={normalizedProduct} />*/}
                     </div>
+                </div>
+
+                {/* Описание — теперь под галереей на всю ширину */}
+                <div className="mt-16 lg:mt-20 border-t border-zinc-800 pt-12">
+                    <ProductDescription product={normalizedProduct} />
                 </div>
             </div>
 

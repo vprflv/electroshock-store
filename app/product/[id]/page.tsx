@@ -3,11 +3,11 @@ import { Suspense } from 'react';
 import ProductPageClient from "@/features/catalog/product/detail-product/ProductPageClient";
 
 type Props = {
-    params: Promise<{ id: string }>;   // ← важно: Promise в Next.js 15 App Router
+    params: Promise<{ id: string }>;
 };
 
 export default async function ProductPage({ params }: Props) {
-    const { id } = await params;       // ← await params!
+    const { id } = await params;
     const productId = parseInt(id);
 
     if (isNaN(productId)) {
