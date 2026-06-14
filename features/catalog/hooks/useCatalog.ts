@@ -1,8 +1,7 @@
 'use client';
 
-import {useMemo, useEffect, useRef, useTransition} from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-
 
 import {
     useAllLightProducts,
@@ -13,14 +12,12 @@ import {
 
 import { useCatalogFilters } from './useCatalogFilters';
 import { usePrefetchProducts } from './usePrefetchProducts';
-import getPaginationPages from "@/lib/utils/pagination";
 
 type UseCatalogProps = {
     searchTerm: string;
 };
 
 export function useCatalog({ searchTerm }: UseCatalogProps) {
-    const [isPending, startTransition] = useTransition();
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -52,20 +49,26 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
 
     const totalPages = Math.ceil(filters.filteredProducts.length / itemsPerPage);
 
+    // ====================== goToPage ======================
     const goToPage = (page: number) => {
         if (page < 1 || page > totalPages || page === currentPage) return;
 
-        startTransition(() => {
-            const newParams = new URLSearchParams(searchParams.toString());
+        const newParams = new URLSearchParams(searchParams.toString());
 
-            if (page === 1) {
-                newParams.delete('page');
-            } else {
-                newParams.set('page', page.toString());
-            }
+        if (page === 1) {
+            newParams.delete('page');
+        } else {
+            newParams.set('page', page.toString());
+        }
 
-            router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
-        });
+        const newUrl = `${pathname}?${newParams.toString()}`;
+
+        router.push(newUrl, { scroll: false });
+
+        // Страховка для продакшена
+        setTimeout(() => {
+            router.refresh();
+        }, 100);
     };
 
     // Автосброс страницы при изменении фильтров
@@ -75,7 +78,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         inStock: false,
         search: '',
         price: [0, 20000] as [number, number],
-        sort: 'popular' as const,
+        sort: 'popular' as string,           // ← Исправлено
     });
 
     useEffect(() => {
@@ -110,7 +113,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
             inStock: filters.inStockOnly,
             search: searchTerm.trim(),
             price: [...filters.priceRange],
-            sort: 'popular' as const,
+            sort: filters.sortBy,
         };
     }, [
         filters.selectedCategoryIds.length,
@@ -126,18 +129,12 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     ]);
 
     return {
-        // Данные
         productsLoading,
         paginatedProducts,
         totalPages,
         currentPage,
-
-        // Фильтры
         ...filters,
-
-        // Действия
         goToPage,
         itemsPerPage,
-        isPending
     };
 }
