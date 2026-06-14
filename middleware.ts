@@ -1,28 +1,29 @@
 // middleware.ts
-
 import { NextResponse } from 'next/server';
-import {auth} from "@/auth";
+import { auth } from "@/auth";
 
 export default auth((req) => {
     const { nextUrl } = req;
     const isLoggedIn = !!req.auth;
+    const isAdmin = req.auth?.user?.role === 'ADMIN';
 
-    // Страница логина
+    // Если пользователь уже залогинен и пытается зайти на страницу логина
     if (nextUrl.pathname === '/admin/login') {
-        if (isLoggedIn) {
+        if (isLoggedIn && isAdmin) {
             return NextResponse.redirect(new URL('/admin', nextUrl));
         }
         return NextResponse.next();
     }
 
-    // Защита всех остальных страниц /admin/*
+    // Защита всех страниц /admin/*
     if (nextUrl.pathname.startsWith('/admin')) {
         if (!isLoggedIn) {
-            return NextResponse.redirect(new URL('/admin/login', nextUrl));
+            const loginUrl = new URL('/admin/login', nextUrl);
+            loginUrl.searchParams.set('callbackUrl', nextUrl.pathname);
+            return NextResponse.redirect(loginUrl);
         }
 
-        // Проверка роли ADMIN
-        if (req.auth?.user?.role !== 'ADMIN') {
+        if (!isAdmin) {
             return NextResponse.redirect(new URL('/admin/login', nextUrl));
         }
     }
