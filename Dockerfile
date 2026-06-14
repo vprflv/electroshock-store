@@ -14,7 +14,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN corepack enable pnpm && \
-    apk add --no-cache openssl && \
+    apk add --no-cache python3 make g++ openssl && \
     pnpm prisma generate && \
     pnpm build
 
@@ -26,8 +26,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV NEXTAUTH_URL=https://твой-домен.рф
-ENV NEXTAUTH_SECRET=твой_секрет
+ENV NEXTAUTH_URL=https://electroshock-store.relaxdev.ru
+ENV NEXTAUTH_SECRET=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
 
 RUN apk add --no-cache openssl && \
     addgroup --system --gid 1001 nodejs && \
@@ -41,7 +41,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Prisma Client
+# Prisma Client (самое важное!)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
