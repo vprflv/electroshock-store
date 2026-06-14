@@ -54,36 +54,46 @@ export function useAdminProducts() {
 
     // Функция с подтверждением через toast
     const deleteProduct = async (id: number, name: string) => {
-        if (!confirm(`Удалить товар "${name}"?`)) return;
+        toast.error(`Удалить товар "${name}"?`, {
+            description: "Это действие нельзя отменить",
+            action: {
+                label: "Да, удалить",
+                onClick: async () => {
+                    try {
+                        const res = await fetch(`/api/admin/products/${id}`, {
+                            method: 'DELETE'
+                        });
 
-        try {
-            const res = await fetch(`/api/admin/products/${id}`, {
-                method: 'DELETE'
-            });
+                        const data = await res.json();
 
-            const data = await res.json();
+                        if (res.status === 409) {
+                            let message = data.message + '\n\n';
+                            if (data.orders && data.orders.length > 0) {
+                                message += 'Заказы:\n';
+                                data.orders.forEach((o: any) => {
+                                    message += `• #${o.orderNumber} (${o.status}) от ${o.date}\n`;
+                                });
+                            }
+                            toast.error(message, { duration: 8000 });
+                            return;
+                        }
 
-            if (res.status === 409) {
+                        if (!res.ok) throw new Error();
 
-                let message = data.message + '\n\n';
-                if (data.orders && data.orders.length > 0) {
-                    message += 'Заказы:\n';
-                    data.orders.forEach((o: any) => {
-                        message += `• #${o.orderNumber} (${o.status}) от ${o.date}\n`;
-                    });
-                }
-                toast.error(message);
-                return;
-            }
+                        toast.success(`Товар "${name}" успешно удалён`);
+                        // invalidate queries / refetch...
 
-            if (!res.ok) throw new Error();
-
-            toast.success(`Товар "${name}" успешно удалён`);
-            // invalidate queries...
-
-        } catch (err) {
-            toast.error('Не удалось удалить товар');
-        }
+                    } catch (err) {
+                        toast.error('Не удалось удалить товар');
+                    }
+                },
+            },
+            cancel: {
+                label: "Отмена",
+                onClick: () => console.log("отмена"),
+            },
+            duration: 7000,
+        });
     };
 
     return {

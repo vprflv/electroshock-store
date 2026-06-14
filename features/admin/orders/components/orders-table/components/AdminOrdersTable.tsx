@@ -10,8 +10,8 @@ import {
     getPaginationRowModel,
     type SortingState,
 } from '@tanstack/react-table';
-import { Search, Loader2 } from 'lucide-react';
-
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { AdminOrder } from '@/features/admin/types/admin';
 import OrderDetailModal from "@/features/admin/orders/components/OrderDetailModal";
@@ -34,8 +34,21 @@ export default function AdminOrdersTable() {
     const handleViewOrder = (order: AdminOrder) => setSelectedOrder(order);
 
     const handleDeleteOrder = (id: string, orderNumber: string) => {
-        if (!confirm(`Вы уверены, что хотите удалить заказ #${orderNumber}?`)) return;
-        deleteOrder(id);
+        toast.error(`Удалить заказ #${orderNumber}?`, {
+            description: "Это действие нельзя отменить",
+            action: {
+                label: "Удалить",
+                onClick: () => {
+                    deleteOrder(id);
+                    toast.success(`Заказ #${orderNumber} успешно удалён`);
+                },
+            },
+            cancel: {
+                label: "Отмена",
+                onClick: () => console.log("отмена"),
+            },
+            duration: 6000,
+        });
     };
 
     const handleStatusChange = (id: string, status: AdminOrder['status']) => {

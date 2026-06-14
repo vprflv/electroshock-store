@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCheckout } from '../hooks/useCheckout';
 import OrderSummary from "@/features/checkout/components/OrderSummary";
+import Link from "next/link";
 
 export default function CheckoutForm() {
     const router = useRouter();
@@ -143,16 +144,29 @@ export default function CheckoutForm() {
                     {/* Согласие с политикой */}
                     <div className="pt-4">
                         <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={agreePolicy}
-                                onChange={(e) => setAgreePolicy(e.target.checked)}
-                                className="mt-1 w-5 h-5 accent-yellow-400"
-                                required
-                            />
-                            <span className="text-sm text-zinc-400">
-                                Я согласен с <span className="text-yellow-400 hover:underline">политикой конфиденциальности</span> и условиями обработки персональных данных
-                            </span>
+                            {/* Согласие с политикой */}
+                            <div className="pt-4">
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreePolicy}
+                                        onChange={(e) => setAgreePolicy(e.target.checked)}
+                                        className="mt-1 w-5 h-5 accent-yellow-400"
+                                        required
+                                    />
+                                    <span className="text-sm text-zinc-400">
+                                                 Я согласен с{' '}
+                                        <Link
+                                            href="/policy/privacy"
+                                            target="_blank"
+                                            className="text-yellow-400 hover:text-yellow-300 hover:underline transition-colors"
+                                        >
+                                        политикой конфиденциальности
+                                         </Link>{' '}
+                                        и условиями обработки персональных данных
+                                        </span>
+                                </label>
+                            </div>
                         </label>
                     </div>
 

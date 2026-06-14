@@ -66,7 +66,7 @@ export default function HeaderDesktop({
                     <div className="flex-1 flex justify-center">
                         <div className="flex items-center gap-10 text-sm font-medium">
                             <Link href="/" className="hover:text-yellow-400 transition-colors">Каталог</Link>
-                            <Link href="/#about" className="hover:text-yellow-400 transition-colors">О магазине</Link>
+                            <Link href="/about" className="hover:text-yellow-400 transition-colors">О магазине</Link>
                             <Link href="/#delivery" className="hover:text-yellow-400 transition-colors">Доставка</Link>
                             <Link href="/#contacts" className="hover:text-yellow-400 transition-colors">Контакты</Link>
                         </div>

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, UserPlus, Trash2 } from 'lucide-react';
+import { UserPlus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';                    // ← добавили
+
 import AddAdminModal from '@/features/admin/settings/components/AddAdminModal';
 import { useAdminUsers } from '@/features/admin/settings/hooks/useAdminUsers';
 
@@ -10,9 +12,21 @@ export default function AdminSettingsPage() {
     const { users, isLoading, deleteUser } = useAdminUsers();
 
     const handleDelete = (id: string, name: string) => {
-        if (confirm(`Удалить администратора ${name}?`)) {
-            deleteUser(id);
-        }
+        toast.error(`Удалить администратора ${name}?`, {
+            description: "Это действие нельзя отменить",
+            action: {
+                label: "Да, удалить",
+                onClick: () => {
+                    deleteUser(id);
+                    toast.success(`Администратор ${name} удалён`);
+                },
+            },
+            cancel: {
+                label: "Отмена",
+                onClick: () => console.log("отмена"),
+            },
+            duration: 6500,
+        });
     };
 
     return (
@@ -72,9 +86,9 @@ export default function AdminSettingsPage() {
                                         {user.email}
                                     </td>
                                     <td className="px-6 md:px-8 py-5">
-                                            <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
-                                                ADMIN
-                                            </span>
+                                        <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium">
+                                            ADMIN
+                                        </span>
                                     </td>
                                     <td className="px-6 md:px-8 py-5 text-zinc-400 text-sm">
                                         {new Date(user.createdAt).toLocaleDateString('ru-RU')}

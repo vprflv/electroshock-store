@@ -3,24 +3,34 @@
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { toast } from 'sonner';
+
 export default function LogoutButton() {
-    const handleLogout = async () => {
-        const confirmed = confirm('Вы действительно хотите выйти из админки?');
-        if (!confirmed) return;
+    const handleLogout = () => {
+        toast.error('Выйти из админки?', {
+            description: 'Вы действительно хотите завершить сессию?',
+            action: {
+                label: 'Да, выйти',
+                onClick: async () => {
+                    try {
+                        toast.loading('Выход из системы...', { id: 'logout' });
 
-        try {
-            toast.loading('Выход...', { id: 'logout' });
-            await signOut({
-                callbackUrl: '/admin',     // куда перенаправить после выхода
-                redirect: true,
-            });
+                        await signOut({
+                            callbackUrl: '/admin',
+                            redirect: true,
+                        });
 
-            toast.success('Вы успешно вышли из системы', { id: 'logout' });
-        } catch (error) {
-            console.error('Logout error:', error);
-
-            toast.error('Не удалось выйти', { id: 'logout' });
-        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        toast.error('Не удалось выйти из системы', { id: 'logout' });
+                    }
+                },
+            },
+            cancel: {
+                label: "Отмена",
+                onClick: () => console.log("отмена"),
+            },
+            duration: 6000,
+        });
     };
 
     return (

@@ -7,6 +7,7 @@ import ProductCardSkeleton from "./product/ProductCardSkeleton";
 import SearchBar from "@/features/search/SearchBar";
 import PriceAndSortFilters from "@/features/catalog/filters/components/PriceAndSortFilters";
 import getPaginationPages from "@/lib/utils/pagination";
+import HelpSelection from "@/features/catalog/help/HelpSelection";
 
 type CatalogProps = {
     searchTerm: string;
@@ -15,7 +16,13 @@ type CatalogProps = {
     setIsFiltersOpen: (open: boolean) => void;
 };
 
-export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, setIsFiltersOpen }: CatalogProps) {
+export default function Catalog({
+                                    searchTerm,
+                                    onSearchChange,
+                                    isFiltersOpen,
+                                    setIsFiltersOpen
+                                }: CatalogProps) {
+
     const {
         productsLoading,
         paginatedProducts,
@@ -25,7 +32,6 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
         goToPage,
         itemsPerPage,
 
-        // Фильтры
         selectedCategoryIds,
         setSelectedCategoryIds,
         selectedBrandIds,
@@ -45,28 +51,34 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
             <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
 
-                {/* Блок фильтров — скрываем на мобильных */}
-                {/* Десктопный сайдбар */}
-                <div className="hidden lg:block lg:w-80 flex-shrink-0">
-                    <Filters
-                        selectedCategoryIds={selectedCategoryIds}
-                        setSelectedCategoryIds={setSelectedCategoryIds}
-                        selectedBrandIds={selectedBrandIds}
-                        setSelectedBrandIds={setSelectedBrandIds}
-                        priceRange={priceRange}
-                        setPriceRange={setPriceRange}
-                        inStockOnly={inStockOnly}
-                        setInStockOnly={setInStockOnly}
-                        sortBy={sortBy}
-                        setSortBy={setSortBy}
-                        onReset={resetFilters}
-                        availableBrands={availableBrands}
-                        availableCategories={availableCategories}
-                        // isOpen и onClose НЕ передаём — они только для мобильного
-                    />
+                {/* ====================== ЛЕВАЯ КОЛОНКА (Десктоп) ====================== */}
+                <div className="hidden lg:flex lg:flex-col lg:w-80 flex-shrink-0 gap-8">
+
+                    {/* 1. Фильтры */}
+                    <div className="mb-8">
+                        <Filters
+                            selectedCategoryIds={selectedCategoryIds}
+                            setSelectedCategoryIds={setSelectedCategoryIds}
+                            selectedBrandIds={selectedBrandIds}
+                            setSelectedBrandIds={setSelectedBrandIds}
+                            priceRange={priceRange}
+                            setPriceRange={setPriceRange}
+                            inStockOnly={inStockOnly}
+                            setInStockOnly={setInStockOnly}
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
+                            onReset={resetFilters}
+                            availableBrands={availableBrands}
+                            availableCategories={availableCategories}
+                        />
+                    </div>
+
+                    {/* 2. Помощь в подборе */}
+                    <HelpSelection />
+
                 </div>
 
-                {/* МОБИЛЬНЫЙ DRAWER — скрываем на больших экранах */}
+                {/* ====================== МОБИЛЬНЫЙ DRAWER ====================== */}
                 <div className="lg:hidden">
                     <Filters
                         selectedCategoryIds={selectedCategoryIds}
@@ -86,9 +98,9 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
                         onClose={() => setIsFiltersOpen(false)}
                     />
                 </div>
-                {/* Основная часть каталога */}
-                <div className="flex-1">
 
+                {/* ====================== ОСНОВНОЙ КОНТЕНТ ====================== */}
+                <div className="flex-1">
                     {/* Поиск */}
                     <div className="mb-8">
                         <SearchBar
@@ -98,10 +110,8 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
                         />
                     </div>
 
-                    {/* Сортировка + статистика в одном ряду */}
+                    {/* Сортировка + статистика */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-
-                        {/* Левая часть — Сортировка и фильтры цены */}
                         <div>
                             <PriceAndSortFilters
                                 sortBy={sortBy}
@@ -111,15 +121,12 @@ export default function Catalog({ searchTerm, onSearchChange, isFiltersOpen, set
                             />
                         </div>
 
-                        {/* Правая часть — Статистика (скрываем на мобильных) */}
                         <p className="hidden md:block text-zinc-400 text-sm md:text-base whitespace-nowrap">
-                            Показано: <span className="text-white font-medium">
-            {productsLoading ? '—' : Math.min(currentPage * itemsPerPage, filteredProducts.length)}
-        </span> из {filteredProducts.length}
+                            Показано: <span className="text-yellow-400 font-medium">
+                                {productsLoading ? '—' : Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+                            </span> из {filteredProducts.length}
                         </p>
-
                     </div>
-
 
                     {/* Сетка товаров */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
