@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useCallback, useTransition } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import {
@@ -21,6 +21,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
+    const [isPending, startTransition] = useTransition();
 
     const currentPage = parseInt(searchParams.get('page') || '1');
 
@@ -53,6 +54,8 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     const goToPage = useCallback((page: number) => {
         if (page < 1 || page > totalPages || page === currentPage) return;
 
+        console.log(`goToPage called: ${page} current: ${currentPage} url: ${pathname}`);
+
         const newParams = new URLSearchParams(searchParams.toString());
 
         if (page === 1) {
@@ -63,11 +66,13 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
 
         const newUrl = `${pathname}?${newParams.toString()}`;
 
-        console.log('goToPage called:', page, 'current:', currentPage, 'url:', newUrl);
-        router.push(newUrl, { scroll: false });
+        // Используем startTransition + replace — самый стабильный способ
+        startTransition(() => {
+            router.replace(newUrl, { scroll: false });
+        });
     }, [currentPage, totalPages, searchParams, pathname, router]);
 
-    // Автосброс страницы при изменении фильтров
+    // ====================== Автосброс страницы ======================
     const prevFiltersRef = useRef({
         categories: 0,
         brands: 0,
@@ -96,15 +101,17 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
             filters.priceRange[1] !== prevFiltersRef.current.price[1] ||
             filters.sortBy !== prevFiltersRef.current.sort;
 
-        // Сбрасываем на первую страницу только если фильтры реально изменились
         if (hasActiveFilters && filtersChanged && currentPage !== 1) {
+            console.log('Auto reset to page 1 due to filters change');
+
             const newParams = new URLSearchParams(searchParams);
             newParams.delete('page');
 
-            router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+            startTransition(() => {
+                router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+            });
         }
 
-        // Обновляем реф (всегда в конце)
         prevFiltersRef.current = {
             categories: filters.selectedCategoryIds.length,
             brands: filters.selectedBrandIds.length,
@@ -124,7 +131,6 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         currentPage,
         pathname,
         router,
-
     ]);
 
     return {
@@ -135,5 +141,6 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         ...filters,
         goToPage,
         itemsPerPage,
+        isPending,
     };
 }

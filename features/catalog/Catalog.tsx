@@ -44,6 +44,7 @@ export default function Catalog({
         setInStockOnly,
         sortBy,
         setSortBy,
+        isPending,
         resetFilters,
         availableCategories,
         availableBrands,
@@ -158,14 +159,17 @@ export default function Catalog({
                     {!productsLoading && totalPages > 1 && (
                         <div className="mt-auto pt-12 pb-8 flex justify-center">
                             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-2">
+
+                                {/* Кнопка Назад */}
                                 <button
                                     onClick={() => goToPage(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 transition-all"
+                                    disabled={currentPage === 1 || isPending}
+                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     ← Назад
                                 </button>
 
+                                {/* Номера страниц */}
                                 <div className="flex items-center gap-1">
                                     {getPaginationPages(currentPage, totalPages).map((page, index) => (
                                         <button
@@ -173,19 +177,20 @@ export default function Catalog({
                                             onClick={() => typeof page === 'number' && goToPage(page)}
                                             className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all text-sm font-medium ${
                                                 page === currentPage
-                                                    ? 'bg-yellow-400 text-black font-semibold scale-110'
-                                                    : 'hover:bg-zinc-800 text-zinc-300'
-                                            } ${page === '...' ? 'cursor-default text-zinc-500' : ''}`}
+                                                    ? 'bg-yellow-400 text-black font-semibold scale-110 cursor-default'
+                                                    : 'hover:bg-zinc-800 text-zinc-300 hover:scale-105'
+                                            } ${page === '...' ? 'cursor-default text-zinc-500 pointer-events-none' : ''}`}
                                         >
                                             {page}
                                         </button>
                                     ))}
                                 </div>
 
+                                {/* Кнопка Вперёд */}
                                 <button
                                     onClick={() => goToPage(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 transition-all"
+                                    disabled={currentPage === totalPages || isPending}
+                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     Вперёд →
                                 </button>

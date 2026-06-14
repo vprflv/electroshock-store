@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'new';
 
 type UseCatalogFiltersProps = {
     productsToShow: any[];
-    availableCategories?: any[];   // настоящие категории из БД
-    availableBrands?: any[];       // настоящие бренды из БД
+    availableCategories?: any[];
+    availableBrands?: any[];
 };
 
 export function useCatalogFilters({
@@ -22,30 +22,30 @@ export function useCatalogFilters({
     const [inStockOnly, setInStockOnly] = useState(false);
     const [sortBy, setSortBy] = useState<SortOption>('popular');
 
-    // Основная фильтрация
+    // Основная фильтрация + сортировка
     const filteredProducts = useMemo(() => {
         let result = [...productsToShow];
 
-        // Фильтр по категориям (по id)
+        // Категории
         if (selectedCategoryIds.length > 0) {
             result = result.filter(p =>
                 p.category?.id && selectedCategoryIds.includes(p.category.id)
             );
         }
 
-        // Фильтр по брендам (по id)
+        // Бренды
         if (selectedBrandIds.length > 0) {
             result = result.filter(p =>
                 p.brand?.id && selectedBrandIds.includes(p.brand.id)
             );
         }
 
-        // Фильтр по цене
+        // Цена
         result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
-        // Только в наличии
+        // В наличии
         if (inStockOnly) {
-            result = result.filter(p => p.stock > 0);
+            result = result.filter(p => (p.stock ?? 0) > 0);
         }
 
         // Сортировка
@@ -61,7 +61,7 @@ export function useCatalogFilters({
                 break;
             case 'popular':
             default:
-                result.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+                result.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
                 break;
         }
 
@@ -72,16 +72,16 @@ export function useCatalogFilters({
         selectedBrandIds,
         priceRange,
         inStockOnly,
-        sortBy
+        sortBy,
     ]);
 
-    const resetFilters = () => {
+    const resetFilters = useCallback(() => {
         setSelectedCategoryIds([]);
         setSelectedBrandIds([]);
         setPriceRange([0, 20000]);
         setInStockOnly(false);
         setSortBy('popular');
-    };
+    }, []);
 
     return {
         selectedCategoryIds,
