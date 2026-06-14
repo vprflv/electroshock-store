@@ -19,17 +19,27 @@ export default function AdminLogin() {
         setLoading(true);
         setError('');
 
+        // Приводим email к нижнему регистру
+        const normalizedEmail = email.toLowerCase().trim();
+
         const result = await signIn('credentials', {
-            email,
+            email: normalizedEmail,
             password,
             redirect: false,
         });
 
         if (result?.error) {
             setError('Неверный email или пароль');
+            console.error('SignIn error:', result.error); // для отладки
         } else {
+            // Основной редирект
             router.push('/admin');
             router.refresh();
+
+            // ←←← Самое важное для решения "работает только со 2 раза"
+            setTimeout(() => {
+                window.location.href = '/admin';
+            }, 400);
         }
 
         setLoading(false);
