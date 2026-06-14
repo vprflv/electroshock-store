@@ -18,9 +18,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Важно: передаём переменные на этапе сборки
+ARG NEXTAUTH_URL
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+
 RUN corepack enable pnpm && \
     apk add --no-cache openssl && \
-    echo "dangerously-allow-all-builds=true" > .npmrc && \
     pnpm prisma generate && \
     pnpm build
 
@@ -31,6 +34,11 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# ←←← КРИТИЧНО: передаём переменную в runtime
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
 
 RUN apk add --no-cache openssl && \
     addgroup --system --gid 1001 nodejs && \
@@ -39,9 +47,7 @@ RUN apk add --no-cache openssl && \
     chown -R nextjs:nodejs .next && \
     chmod -R 755 .next
 
-# Копируем next.config.ts
 COPY --from=builder /app/next.config.ts ./
-
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
@@ -54,7 +60,5 @@ COPY --from=builder /app/node_modules/.pnpm/@prisma+client*/*/node_modules/@pris
 USER nextjs
 
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
