@@ -20,7 +20,7 @@ const nextConfig = {
                 hostname: '*.supabase.co',
             },
         ],
-        unoptimized: false,   // можно попробовать false
+        unoptimized: true,
     },
 };
 
