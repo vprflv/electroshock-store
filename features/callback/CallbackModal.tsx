@@ -60,9 +60,9 @@ export default function CallbackModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
             <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md">
                 <div className="flex justify-between px-6 py-5 border-b border-zinc-700">
-                    <h2 className="text-2xl font-semibold">Перезвоните мне</h2>
+                    <h2 className="text-2xl text-yellow-400 font-semibold">Перезвоните мне</h2>
                     <button onClick={onClose} className="text-zinc-400 hover:text-white">
-                        <X className="w-6 h-6" />
+                        <X className="w-6 h-6 hover:text-yellow-400" />
                     </button>
                 </div>
 

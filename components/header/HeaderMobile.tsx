@@ -32,7 +32,7 @@ export default function HeaderMobile({
                     />
                     <div className="flex flex-col -space-y-0.5">
                         <div className="text-2xl font-black tracking-tighter text-yellow-400 leading-none">
-                            ОСА
+                            О-СА
                         </div>
                         <div className="text-[10px] text-zinc-500 font-medium tracking-widest">
                             ОРУЖИЕ ДЛЯ САМООБОРОНЫ
@@ -91,21 +91,21 @@ export default function HeaderMobile({
                             Каталог
                         </Link>
                         <Link
-                            href="/#about"
+                            href="/about"
                             className="hover:text-yellow-400 transition-colors py-2"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             О магазине
                         </Link>
                         <Link
-                            href="/#delivery"
+                            href="/delivery"
                             className="hover:text-yellow-400 transition-colors py-2"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Доставка
                         </Link>
                         <Link
-                            href="/#contacts"
+                            href="/contacts"
                             className="hover:text-yellow-400 transition-colors py-2"
                             onClick={() => setIsMenuOpen(false)}
                         >

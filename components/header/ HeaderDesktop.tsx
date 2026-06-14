@@ -41,7 +41,7 @@ export default function HeaderDesktop({
 
                     <Link href="/" className="flex mb-8 items-center gap-3 flex-shrink-0 group relative">
 
-                        {/* Оса — независимая и всегда в нужном положении */}
+                        {/* О-СА  */}
                         <img
                             src="/logo.png"
                             alt="ElectroShock"
@@ -54,7 +54,7 @@ export default function HeaderDesktop({
                         {/* Текст — остаётся на месте */}
                         <div className="flex ml-8 flex-col pt-4 sm:pt-5 md:pt-6">
                             <div className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-yellow-400 leading-none">
-                                ОСА
+                                О.СА
                             </div>
                             <div className="text-xs sm:text-sm text-zinc-500 font-medium tracking-widest">
                                 ОРУЖИЕ ДЛЯ САМООБОРОНЫ
@@ -67,8 +67,8 @@ export default function HeaderDesktop({
                         <div className="flex items-center gap-10 text-sm font-medium">
                             <Link href="/" className="hover:text-yellow-400 transition-colors">Каталог</Link>
                             <Link href="/about" className="hover:text-yellow-400 transition-colors">О магазине</Link>
-                            <Link href="/#delivery" className="hover:text-yellow-400 transition-colors">Доставка</Link>
-                            <Link href="/#contacts" className="hover:text-yellow-400 transition-colors">Контакты</Link>
+                            <Link href="/delivery" className="hover:text-yellow-400 transition-colors">Доставка</Link>
+                            <Link href="/contacts" className="hover:text-yellow-400 transition-colors">Контакты</Link>
                         </div>
                     </div>
 

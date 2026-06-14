@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import {auth} from "@/app/api/auth/[...nextauth]/route";
+import {auth} from "@/auth";
+
 
 
 export async function DELETE(
