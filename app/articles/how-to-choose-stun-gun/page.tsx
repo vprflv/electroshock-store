@@ -40,27 +40,12 @@ export default function HowToChooseStunGun() {
                         </div>
                     </div>
 
-                    <h2 className="text-2xl font-semibold mt-12 mb-6">1. Для защиты от нападения</h2>
+                    <h2 className="text-2xl font-semibold mt-12 mb-6">1. Для защиты от нападения собак</h2>
                     <p>
-                        Лучше всего подойдут компактные модели. Их удобно носить каждый день, и в критической ситуации ими проще воспользоваться скрытно.
+                        Лучше всего для повседневного ношения подойдут компактные модели.
+                        Они лёгкие, удобные и занимают минимум места в сумке или кармане.
                     </p>
 
-                    <h2 className="text-2xl font-semibold mt-12 mb-6">2. Электрошокеры-дубинки</h2>
-                    <p>
-                        Самые мощные по разряду. Отлично подходят для автомобилистов, охранников и тех, кому нужна максимальная эффективность.
-                    </p>
-
-                    {/* Второе уменьшенное фото */}
-                    <div className="my-10">
-                        <div className="relative aspect-[16/9] max-h-[320px] rounded-3xl overflow-hidden shadow-xl mx-auto">
-                            <Image
-                                src="/articles/stun-gun-baton.jpg"
-                                alt="Электрошокер-дубинка"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                    </div>
 
                     <h2 className="text-2xl font-semibold mt-12 mb-6">3. Защита от собак</h2>
                     <p>
@@ -79,9 +64,7 @@ export default function HowToChooseStunGun() {
                         </div>
                     </div>
 
-                    <p className="mt-12">
-                        В нашем каталоге каждая модель снабжена понятными пиктограммами — они помогают быстро понять, для каких задач лучше всего подходит тот или иной электрошокер.
-                    </p>
+
 
                 </div>
             </div>

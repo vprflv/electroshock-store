@@ -57,7 +57,7 @@ export default function HeaderDesktop({
                                 О.СА
                             </div>
                             <div className="text-xs sm:text-sm text-zinc-500 font-medium tracking-widest">
-                                ОРУЖИЕ ДЛЯ САМООБОРОНЫ
+                                СРЕДСТВА ДЛЯ САМОЗАЩИТЫ
                             </div>
                         </div>
                     </Link>

@@ -5,12 +5,12 @@ import Link from 'next/link';
 
 export default function HelpSelection() {
     const helpItems = [
-        {
-            title: "Защита от нападения",
-            image: "/help/self-defense.jpg",
-            alt: "Самооборона",
-            href: "/articles/self-defense",
-        },
+        // {
+        //     title: "Защита от нападения",
+        //     image: "/help/self-defense.jpg",
+        //     alt: "Самозащита",
+        //     href: "/articles/self-defense",
+        // },
         {
             title: "Как выбрать электрошокер?",
             image: "/help/choose-stun-gun.jpg",
