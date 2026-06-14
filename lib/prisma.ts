@@ -1,3 +1,4 @@
+// lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
@@ -13,16 +14,7 @@ export const prisma =
                 : ['error'],
     });
 
-// Только в dev-режиме сохраняем в global (для HMR)
+
 if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma;
 }
-
-// Корректное отключение при завершении процесса
-process.on('beforeExit', async () => {
-    await prisma.$disconnect();
-});
-
-process.on('SIGTERM', async () => {
-    await prisma.$disconnect();
-});
