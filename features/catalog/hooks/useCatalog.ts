@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import {
@@ -50,7 +50,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     const totalPages = Math.ceil(filters.filteredProducts.length / itemsPerPage);
 
     // ====================== goToPage ======================
-    const goToPage = (page: number) => {
+    const goToPage = useCallback((page: number) => {
         if (page < 1 || page > totalPages || page === currentPage) return;
 
         const newParams = new URLSearchParams(searchParams.toString());
@@ -63,13 +63,9 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
 
         const newUrl = `${pathname}?${newParams.toString()}`;
 
+        console.log('goToPage called:', page, 'current:', currentPage, 'url:', newUrl);
         router.push(newUrl, { scroll: false });
-
-        // Страховка для продакшена
-        setTimeout(() => {
-            router.refresh();
-        }, 100);
-    };
+    }, [currentPage, totalPages, searchParams, pathname, router]);
 
     // Автосброс страницы при изменении фильтров
     const prevFiltersRef = useRef({
@@ -78,7 +74,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         inStock: false,
         search: '',
         price: [0, 20000] as [number, number],
-        sort: 'popular' as string,           // ← Исправлено
+        sort: 'popular' as string,
     });
 
     useEffect(() => {
@@ -100,13 +96,15 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
             filters.priceRange[1] !== prevFiltersRef.current.price[1] ||
             filters.sortBy !== prevFiltersRef.current.sort;
 
+        // Сбрасываем на первую страницу только если фильтры реально изменились
         if (hasActiveFilters && filtersChanged && currentPage !== 1) {
             const newParams = new URLSearchParams(searchParams);
             newParams.delete('page');
+
             router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
         }
 
-        // Обновляем реф
+        // Обновляем реф (всегда в конце)
         prevFiltersRef.current = {
             categories: filters.selectedCategoryIds.length,
             brands: filters.selectedBrandIds.length,
@@ -119,13 +117,14 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         filters.selectedCategoryIds.length,
         filters.selectedBrandIds.length,
         filters.inStockOnly,
-        filters.priceRange,
+        filters.priceRange[0],
+        filters.priceRange[1],
         filters.sortBy,
         searchTerm,
         currentPage,
-        searchParams,
         pathname,
         router,
+
     ]);
 
     return {
