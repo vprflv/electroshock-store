@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import {useMemo, useEffect, useRef, useTransition} from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+
 
 import {
     useAllLightProducts,
@@ -19,6 +20,7 @@ type UseCatalogProps = {
 };
 
 export function useCatalog({ searchTerm }: UseCatalogProps) {
+    const [isPending, startTransition] = useTransition();
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -51,16 +53,19 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     const totalPages = Math.ceil(filters.filteredProducts.length / itemsPerPage);
 
     const goToPage = (page: number) => {
-        if (page < 1 || page > totalPages) return;
+        if (page < 1 || page > totalPages || page === currentPage) return;
 
-        const newParams = new URLSearchParams(searchParams.toString());
-        if (page === 1) {
-            newParams.delete('page');
-        } else {
-            newParams.set('page', page.toString());
-        }
+        startTransition(() => {
+            const newParams = new URLSearchParams(searchParams.toString());
 
-        router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+            if (page === 1) {
+                newParams.delete('page');
+            } else {
+                newParams.set('page', page.toString());
+            }
+
+            router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+        });
     };
 
     // Автосброс страницы при изменении фильтров
@@ -133,5 +138,6 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         // Действия
         goToPage,
         itemsPerPage,
+        isPending
     };
 }

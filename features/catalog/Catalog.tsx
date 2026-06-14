@@ -34,6 +34,8 @@ export default function Catalog({
         goToPage,
         itemsPerPage,
 
+        isPending,
+
         selectedCategoryIds,
         setSelectedCategoryIds,
         selectedBrandIds,
@@ -170,6 +172,7 @@ export default function Catalog({
                                     {getPaginationPages(currentPage, totalPages).map((page, index) => (
                                         <button
                                             key={index}
+                                            disabled={isPending}
                                             onClick={() => typeof page === 'number' && goToPage(page)}
                                             className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all text-sm font-medium ${
                                                 page === currentPage
