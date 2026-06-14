@@ -21,8 +21,10 @@ export function useAdminStats() {
     return useQuery({
         queryKey: ['admin', 'stats'],
         queryFn: fetchAdminStats,
-        staleTime: 1000 * 60,
-        refetchInterval: 1000 * 60,
-        refetchOnWindowFocus: true,
+        staleTime: 1000 * 30,
+        gcTime: 1000 * 60 * 5,
+        refetchInterval: 1000 * 45,
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
     });
 }
