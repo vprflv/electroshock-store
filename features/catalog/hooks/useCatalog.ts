@@ -12,7 +12,7 @@ import {
 
 import { useCatalogFilters } from './useCatalogFilters';
 import { usePrefetchProducts } from './usePrefetchProducts';
-import { useCatalogPagination } from './useCatalogPagination';   // ← новый хук
+import { useCatalogPagination } from './useCatalogPagination';
 
 type UseCatalogProps = {
     searchTerm: string;
@@ -22,9 +22,11 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
     const searchParams = useSearchParams();
     const currentPage = parseInt(searchParams.get('page') || '1');
 
+    console.log(`[useCatalog] Рендер | currentPage из URL = ${currentPage} | searchTerm = "${searchTerm}"`);
+
     const { goToPage } = useCatalogPagination();
 
-    // Запросы...
+    // Запросы данных
     const { data: allProducts = [] } = useAllLightProducts();
     const { data: searchedProducts = [], isLoading: productsLoading } = useSearchProducts(searchTerm);
     const { data: categories = [] } = useCategories();
@@ -42,14 +44,16 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
 
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return filters.filteredProducts.slice(start, start + itemsPerPage);
-    }, [filters.filteredProducts, currentPage]);
+        const result = filters.filteredProducts.slice(start, start + itemsPerPage);
+        console.log(`[useCatalog] Пагинация: страница ${currentPage}, товаров на странице: ${result.length}, всего отфильтровано: ${filters.filteredProducts.length}`);
+        return result;
+    }, [filters.filteredProducts, currentPage, itemsPerPage]);
 
     usePrefetchProducts(paginatedProducts);
 
     const totalPages = Math.ceil(filters.filteredProducts.length / itemsPerPage);
 
-    // Автосброс страницы (упрощённый, как в рабочем проекте)
+    // Автосброс страницы
     useEffect(() => {
         const hasActiveFilters =
             filters.selectedCategoryIds.length > 0 ||
@@ -60,7 +64,10 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
             filters.priceRange[1] !== 20000 ||
             filters.sortBy !== 'popular';
 
+        console.log(`[useEffect автосброс] hasActiveFilters = ${hasActiveFilters}, currentPage = ${currentPage}`);
+
         if (hasActiveFilters && currentPage !== 1) {
+            console.log(`[useEffect автосброс] → Сбрасываем на страницу 1`);
             goToPage(1);
         }
     }, [
@@ -71,6 +78,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         filters.priceRange[1],
         filters.sortBy,
         searchTerm,
+        currentPage,
         goToPage,
     ]);
 
