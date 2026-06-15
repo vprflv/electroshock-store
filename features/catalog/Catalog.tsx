@@ -18,6 +18,9 @@ type CatalogProps = {
     setIsFiltersOpen: (open: boolean) => void;
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function Catalog({
                                     searchTerm,
                                     onSearchChange,

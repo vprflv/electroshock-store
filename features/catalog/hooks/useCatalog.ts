@@ -18,6 +18,7 @@ type UseCatalogProps = {
     searchTerm: string;
 };
 
+
 export function useCatalog({ searchTerm }: UseCatalogProps) {
     const searchParams = useSearchParams();
     const currentPage = parseInt(searchParams.get('page') || '1');
@@ -67,7 +68,7 @@ export function useCatalog({ searchTerm }: UseCatalogProps) {
         console.log(`[useEffect автосброс] hasActiveFilters = ${hasActiveFilters}, currentPage = ${currentPage}`);
 
         if (hasActiveFilters && currentPage !== 1) {
-            console.log(`[useEffect автосброс] → Сбрасываем на страницу 1`);
+            console.log(`[Автосброс] → goToPage(1)`);
             goToPage(1);
         }
     }, [
