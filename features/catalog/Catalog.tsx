@@ -10,7 +10,8 @@ import getPaginationPages from "@/lib/utils/pagination";
 import HelpSelection from "@/features/catalog/help/HelpSelection";
 import { ArrowUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
-
+import Link from "next/link";
+import { useSearchParams, usePathname } from 'next/navigation';
 type CatalogProps = {
     searchTerm: string;
     onSearchChange: (value: string) => void;
@@ -51,6 +52,9 @@ export default function Catalog({
     } = useCatalog({ searchTerm });
 
     const [showScrollTop, setShowScrollTop] = useState(false);
+
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -160,40 +164,78 @@ export default function Catalog({
                         <div className="mt-auto pt-12 pb-8 flex justify-center">
                             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-2">
 
-                                {/* Кнопка Назад */}
-                                <button
-                                    onClick={() => goToPage(currentPage - 1)}
-                                    disabled={currentPage === 1 || isPending}
-                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                {/* Назад */}
+                                <Link
+                                    href={currentPage > 1
+                                        ? `${pathname}?${new URLSearchParams({
+                                            ...Object.fromEntries(searchParams),
+                                            page: (currentPage - 1).toString()
+                                        }).toString()}`
+                                        : '#'
+                                    }
+                                    scroll={false}
+                                    prefetch={false}
+                                    className={`px-5 py-3 hover:bg-zinc-800 rounded-2xl transition-all ${
+                                        currentPage === 1 ? 'opacity-40 pointer-events-none' : ''
+                                    }`}
                                 >
                                     ← Назад
-                                </button>
+                                </Link>
 
                                 {/* Номера страниц */}
                                 <div className="flex items-center gap-1">
-                                    {getPaginationPages(currentPage, totalPages).map((page, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => typeof page === 'number' && goToPage(page)}
-                                            className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all text-sm font-medium ${
-                                                page === currentPage
-                                                    ? 'bg-yellow-400 text-black font-semibold scale-110 cursor-default'
-                                                    : 'hover:bg-zinc-800 text-zinc-300 hover:scale-105'
-                                            } ${page === '...' ? 'cursor-default text-zinc-500 pointer-events-none' : ''}`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
+                                    {getPaginationPages(currentPage, totalPages).map((page, index) => {
+                                        if (typeof page !== 'number') {
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="w-10 h-10 flex items-center justify-center text-zinc-500 cursor-default"
+                                                >
+                                ...
+                            </span>
+                                            );
+                                        }
+
+                                        const isActive = page === currentPage;
+                                        const href = page === 1
+                                            ? pathname
+                                            : `${pathname}?page=${page}`;
+
+                                        return (
+                                            <Link
+                                                key={index}
+                                                href={href}
+                                                scroll={false}
+                                                prefetch={false}
+                                                className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all text-sm font-medium ${
+                                                    isActive
+                                                        ? 'bg-yellow-400 text-black font-semibold scale-110'
+                                                        : 'hover:bg-zinc-800 text-zinc-300 hover:scale-105'
+                                                }`}
+                                            >
+                                                {page}
+                                            </Link>
+                                        );
+                                    })}
                                 </div>
 
-                                {/* Кнопка Вперёд */}
-                                <button
-                                    onClick={() => goToPage(currentPage + 1)}
-                                    disabled={currentPage === totalPages || isPending}
-                                    className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                {/* Вперёд */}
+                                <Link
+                                    href={currentPage < totalPages
+                                        ? `${pathname}?${new URLSearchParams({
+                                            ...Object.fromEntries(searchParams),
+                                            page: (currentPage + 1).toString()
+                                        }).toString()}`
+                                        : '#'
+                                    }
+                                    scroll={false}
+                                    prefetch={false}
+                                    className={`px-5 py-3 hover:bg-zinc-800 rounded-2xl transition-all ${
+                                        currentPage === totalPages ? 'opacity-40 pointer-events-none' : ''
+                                    }`}
                                 >
                                     Вперёд →
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     )}
