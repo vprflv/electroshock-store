@@ -11,9 +11,7 @@ export async function POST(request: NextRequest) {
             phone,
             address,
             comment = '',
-            deliveryType,
-            paymentType,
-            items,           // [{ productId, quantity, priceAtTime }]
+            items,
             total
         } = body;
 

@@ -5,7 +5,7 @@ import {toPlain} from "@/lib/utils/toPlain";
 import {unstable_cache, revalidateTag , revalidatePath } from "next/cache";
 
 
-// Лёгкая версия для каталога (быстрая загрузка)
+
 export const getAllLightProducts = unstable_cache(
     async () => {
         const products = await prisma.product.findMany({
@@ -61,7 +61,7 @@ export const getAllProductsForAdmin = unstable_cache(
     },
     ['all-products-admin'],
     {
-        revalidate: 60,           // 1 минута — хороший баланс
+        revalidate: 60,
         tags: ['admin-products'],
     }
 );

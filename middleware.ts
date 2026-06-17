@@ -7,7 +7,6 @@ export default auth((req) => {
     const isLoggedIn = !!req.auth;
     const isAdmin = req.auth?.user?.role === 'ADMIN';
 
-    // Если пользователь уже залогинен и пытается зайти на страницу логина
     if (nextUrl.pathname === '/admin/login') {
         if (isLoggedIn && isAdmin) {
             return NextResponse.redirect(new URL('/admin', nextUrl));
@@ -15,16 +14,11 @@ export default auth((req) => {
         return NextResponse.next();
     }
 
-    // Защита всех страниц /admin/*
-    if (nextUrl.pathname.startsWith('/admin')) {
-        if (!isLoggedIn) {
+    if (nextUrl.pathname.startsWith('/admin') && nextUrl.pathname !== '/admin/login') {
+        if (!isLoggedIn || !isAdmin) {
             const loginUrl = new URL('/admin/login', nextUrl);
             loginUrl.searchParams.set('callbackUrl', nextUrl.pathname);
             return NextResponse.redirect(loginUrl);
-        }
-
-        if (!isAdmin) {
-            return NextResponse.redirect(new URL('/admin/login', nextUrl));
         }
     }
 

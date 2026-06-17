@@ -18,7 +18,7 @@ export default function AdminProductsHeader({ totalProducts }: AdminProductsHead
             </div>
 
             <Link
-                href="/admin/products/new"
+                href="/admin/(protected)/products/new"
                 className="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-5 py-3 rounded-2xl transition w-full sm:w-auto"
             >
                 <Plus className="w-5 h-5" />

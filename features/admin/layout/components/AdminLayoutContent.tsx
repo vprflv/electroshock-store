@@ -1,3 +1,4 @@
+// features/admin/layout/AdminLayoutContent.tsx
 'use client';
 
 import { ReactNode, useState } from 'react';
@@ -6,7 +7,7 @@ import { Menu } from 'lucide-react';
 import AdminHeader from "@/features/admin/layout/header/components/AdminHeader";
 import AdminSidebar from "@/features/admin/layout/sidebar/components/AdminSidebar";
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default function AdminLayoutContent({ children }: { children: ReactNode }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
@@ -35,7 +36,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </main>
             </div>
 
-            {/* Overlay для мобильного меню */}
+            {/* Overlay */}
             {isMobileMenuOpen && (
                 <div
                     className="fixed inset-0 bg-black/70 z-40 md:hidden"

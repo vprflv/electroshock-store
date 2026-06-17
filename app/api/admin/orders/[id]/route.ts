@@ -1,60 +1,41 @@
-import { NextResponse } from 'next/server';
+// app/api/admin/orders/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export async function DELETE(
-    request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;
-        const productId = parseInt(id);
 
-        if (isNaN(productId)) {
-            return NextResponse.json({ message: 'Неверный ID товара' }, { status: 400 });
+        if (!id) {
+            return NextResponse.json({ error: 'ID заказа не передан' }, { status: 400 });
         }
 
-        // Проверяем, есть ли товар в заказах
-        const orderItems = await prisma.orderItem.findMany({
-            where: { productId },
-            include: {
-                order: {
-                    select: {
-                        id: true,
-                        orderNumber: true,
-                        createdAt: true,
-                        status: true,
-                    }
-                }
-            }
+        const order = await prisma.order.findUnique({
+            where: { id },
+            select: { id: true, orderNumber: true }
         });
 
-        if (orderItems.length > 0) {
-            const ordersInfo = orderItems.map(item => ({
-                orderNumber: item.order.orderNumber,
-                status: item.order.status,
-                date: item.order.createdAt.toLocaleDateString('ru-RU')
-            }));
-
-            return NextResponse.json({
-                message: `Невозможно удалить товар. Он присутствует в ${orderItems.length} заказе(ах).`,
-                orders: ordersInfo
-            }, { status: 409 });
+        if (!order) {
+            return NextResponse.json({ error: 'Заказ не найден' }, { status: 404 });
         }
 
-        // Если товар нигде не используется — удаляем
-        const deletedProduct = await prisma.product.delete({
-            where: { id: productId },
-            select: { name: true, article: true }
+        await prisma.order.delete({
+            where: { id },
         });
 
+        revalidatePath('/admin/orders');
+
         return NextResponse.json({
-            message: `Товар "${deletedProduct.name}" (${deletedProduct.article}) успешно удалён`
+            success: true,
+            message: `Заказ #${order.orderNumber} успешно удалён`
         });
 
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({
-            message: 'Ошибка при удалении товара'
-        }, { status: 500 });
+    } catch (error: any) {
+        console.error('Delete order error:', error);
+        return NextResponse.json({ error: 'Ошибка при удалении заказа' }, { status: 500 });
     }
 }

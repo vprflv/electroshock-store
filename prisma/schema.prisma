@@ -16,6 +16,9 @@ model User {
   password      String?
   role          Role      @default(USER)
 
+  twoFactorCode        String?
+  twoFactorCodeExpires DateTime?
+
   orders Order[]
 
   createdAt DateTime @default(now())
