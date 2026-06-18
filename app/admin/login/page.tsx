@@ -7,7 +7,6 @@ import { Eye, EyeOff, Mail } from 'lucide-react';
 
 export default function AdminLogin() {
     const [step, setStep] = useState<'credentials' | 'code'>('credentials');
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [code, setCode] = useState('');
@@ -17,7 +16,6 @@ export default function AdminLogin() {
 
     const router = useRouter();
 
-    // Шаг 1: Логин + пароль
     const handleCredentialsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -29,18 +27,26 @@ export default function AdminLogin() {
             redirect: false,
         });
 
+        console.log('SignIn result:', result); // ← оставь для отладки
+
+        // === КЛЮЧЕВАЯ ПРОВЕРКА ===
+        if (result?.error === 'CredentialsSignin' && result?.code === '2FA_REQUIRED') {
+            setStep('code');
+            setLoading(false);
+            return;
+        }
+
+        // Если есть любая другая ошибка
         if (result?.error) {
             setError('Неверный email или пароль');
             setLoading(false);
             return;
         }
 
-        // Если пароль верный — переходим к вводу кода
-        setStep('code');
-        setLoading(false);
+        // Если вдруг сразу вошёл (без 2FA)
+        router.push('/admin');
     };
 
-    // Шаг 2: Ввод кода из почты
     const handleCodeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -48,7 +54,7 @@ export default function AdminLogin() {
 
         const result = await signIn('credentials', {
             email: email.toLowerCase().trim(),
-            password,           // нужно передать ещё раз
+            password,
             twoFactorCode: code,
             redirect: false,
         });
@@ -74,8 +80,8 @@ export default function AdminLogin() {
                 </div>
 
                 {step === 'credentials' ? (
-                    // === ШАГ 1: Email + Пароль ===
                     <form onSubmit={handleCredentialsSubmit} className="space-y-6">
+                        {/* Email */}
                         <div>
                             <label className="block text-sm mb-2 text-zinc-400">Email</label>
                             <input
@@ -88,6 +94,7 @@ export default function AdminLogin() {
                             />
                         </div>
 
+                        {/* Пароль */}
                         <div>
                             <label className="block text-sm mb-2 text-zinc-400">Пароль</label>
                             <div className="relative">
@@ -120,13 +127,12 @@ export default function AdminLogin() {
                         </button>
                     </form>
                 ) : (
-                    // === ШАГ 2: Ввод кода ===
                     <form onSubmit={handleCodeSubmit} className="space-y-6">
                         <div className="text-center">
                             <Mail className="w-12 h-12 mx-auto text-yellow-400 mb-4" />
                             <h2 className="text-2xl font-semibold mb-2">Введите код</h2>
                             <p className="text-zinc-400">
-                                Мы отправили 6-значный код на <br />
+                                Мы отправили 6-значный код на<br />
                                 <strong>{email}</strong>
                             </p>
                         </div>
