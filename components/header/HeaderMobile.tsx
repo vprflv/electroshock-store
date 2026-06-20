@@ -84,7 +84,7 @@ export default function HeaderMobile({
 
                     <div className="flex flex-col p-6 space-y-6 text-lg font-medium">
                         <Link
-                            href="/"
+                            href="/catalog"
                             className="hover:text-yellow-400 transition-colors py-2"
                             onClick={() => setIsMenuOpen(false)}
                         >

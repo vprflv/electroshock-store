@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 import Catalog from "@/features/catalog/Catalog";
 import CartModal from "@/features/cart/CartModal";
 
-export default function HomeClient() {
+export default function CatalogClient() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);

@@ -9,7 +9,7 @@ export default function SelfDefenseArticle() {
             {/* Хедер */}
             <div className="border-b border-zinc-800 bg-zinc-900">
                 <div className="max-w-3xl mx-auto px-6 py-12">
-                    <Link href="/" className="text-yellow-400 hover:text-yellow-300 mb-6 inline-flex items-center gap-2">
+                    <Link href="/catalog" className="text-yellow-400 hover:text-yellow-300 mb-6 inline-flex items-center gap-2">
                         ← Назад в каталог
                     </Link>
                     <h1 className="text-4xl md:text-5xl font-bold leading-tight">

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Shield, ShoppingCart, Phone } from 'lucide-react';
-import CallbackButton from '@/features/callback/CallbackButton';   // ← наша кнопка
+import CallbackButton from '@/features/callback/CallbackButton';
+import Logo from "@/components/ui/Logo";   // ← наша кнопка
 
 interface HeaderDesktopProps {
     onCartClick: () => void;
@@ -39,33 +40,12 @@ export default function HeaderDesktop({
                 <div className="flex items-center h-16">
 
 
-                    <Link href="/" className="flex mb-8 items-center gap-3 flex-shrink-0 group relative">
-
-                        {/* О-СА  */}
-                        <img
-                            src="/logo.png"
-                            alt="ElectroShock"
-                            className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain
-                   drop-shadow-[0_0_2px_#facc15]
-                   absolute -top-6 sm:-top-8 md:-top-10 lg:-top-12 xl:-top-14
-                   -left-2 sm:-left-3 md:-left-4 transition-all duration-300 z-10"
-                        />
-
-                        {/* Текст — остаётся на месте */}
-                        <div className="flex ml-8 flex-col pt-4 sm:pt-5 md:pt-6">
-                            <div className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-yellow-400 leading-none">
-                                О.СА
-                            </div>
-                            <div className="text-xs sm:text-sm text-zinc-500 font-medium tracking-widest">
-                                СРЕДСТВА ДЛЯ САМОЗАЩИТЫ
-                            </div>
-                        </div>
-                    </Link>
+                  <Logo size="lg" className="mb-4" />
 
                     {/* Меню по центру */}
                     <div className="flex-1 flex justify-center">
                         <div className="flex items-center gap-10 text-sm font-medium">
-                            <Link href="/" className="hover:text-yellow-400 transition-colors">Каталог</Link>
+                            <Link href="/catalog" className="hover:text-yellow-400 transition-colors">Каталог</Link>
                             <Link href="/about" className="hover:text-yellow-400 transition-colors">О магазине</Link>
                             <Link href="/delivery" className="hover:text-yellow-400 transition-colors">Доставка</Link>
                             <Link href="/contacts" className="hover:text-yellow-400 transition-colors">Контакты</Link>
