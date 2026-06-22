@@ -1,6 +1,7 @@
 // app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {revalidateBrandsAndCategories} from "@/features/actions/productActions";
 
 export async function GET() {
     try {
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
                 slug: name.trim().toLowerCase().replace(/\s+/g, '-'),
             },
         });
+
+        await revalidateBrandsAndCategories()
 
         return NextResponse.json(category, { status: 201 });
     } catch (error: any) {

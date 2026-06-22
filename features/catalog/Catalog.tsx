@@ -168,6 +168,7 @@ export default function Catalog({
                                 {/* Кнопка Назад */}
                                 <button
                                     onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
                                     className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     ← Назад
@@ -193,6 +194,7 @@ export default function Catalog({
                                 {/* Кнопка Вперёд */}
                                 <button
                                     onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
                                     className="px-5 py-3 hover:bg-zinc-800 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
                                     Вперёд →

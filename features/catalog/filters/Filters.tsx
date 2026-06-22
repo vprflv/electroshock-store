@@ -19,7 +19,7 @@ type FiltersProps = {
     availableBrands: { id: string; name: string }[];
     availableCategories: { id: string; name: string }[];
 
-    // Новые пропсы для мобильного drawer
+
     isOpen?: boolean;
     onClose?: () => void;
 };

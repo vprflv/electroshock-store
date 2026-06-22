@@ -179,6 +179,26 @@ export const revalidateAllProducts = async () => {
     }
 };
 
+export const revalidateBrandsAndCategories = async () => {
+    "use server";
+
+    try {
+        revalidateTag('brands', 'default');
+        revalidateTag('categories', 'default');
+        revalidateTag('catalog', 'default');
+        revalidateTag('products', 'default');
+
+
+        revalidatePath('/catalog');
+        revalidatePath('/');
+        revalidatePath('/admin');
+
+
+    } catch (error) {
+        console.error('Revalidation error:', error);
+    }
+};
+
 
 
 

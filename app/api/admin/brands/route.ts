@@ -1,6 +1,7 @@
 // app/api/admin/brands/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import {revalidateBrandsAndCategories} from "@/features/actions/productActions";
 
 export async function GET() {
     try {
@@ -18,21 +19,34 @@ export async function POST(request: NextRequest) {
         const { name } = await request.json();
 
         if (!name || name.trim().length < 2) {
-            return NextResponse.json({ error: 'Имя бренда слишком короткое' }, { status: 400 });
+            return NextResponse.json({ error: 'Название бренда слишком короткое' }, { status: 400 });
         }
+
+        const trimmedName = name.trim();
 
         const brand = await prisma.brand.create({
             data: {
-                name: name.trim(),
-                slug: name.trim().toLowerCase().replace(/\s+/g, '-'),
+                name: trimmedName,
+                slug: trimmedName.toLowerCase()
+                    .replace(/[^a-zа-я0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-|-$/g, ''),
             },
         });
 
+       await revalidateBrandsAndCategories()
+
         return NextResponse.json(brand, { status: 201 });
+
     } catch (error: any) {
         if (error.code === 'P2002') {
-            return NextResponse.json({ error: 'Такой бренд уже существует' }, { status: 409 });
+            return NextResponse.json({
+                error: 'Бренд с таким названием уже существует'
+            }, { status: 409 });
         }
+
+        console.error('Brand creation error:', error);
         return NextResponse.json({ error: 'Ошибка создания бренда' }, { status: 500 });
     }
 }

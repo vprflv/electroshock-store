@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'new';
 
@@ -22,58 +23,60 @@ export function useCatalogFilters({
     const [inStockOnly, setInStockOnly] = useState(false);
     const [sortBy, setSortBy] = useState<SortOption>('popular');
 
-    // Основная фильтрация + сортировка
+    const searchParams = useSearchParams();
+
+    // Автоматический выбор категории при переходе с главной
+    useEffect(() => {
+        const categoryParam = searchParams.get('category');
+        if (!categoryParam) {
+            // Если параметра нет — не трогаем фильтры
+            return;
+        }
+
+        if (availableCategories.length === 0) return;
+
+        const matchedCategory = availableCategories.find(cat =>
+            cat.slug?.toLowerCase() === categoryParam.toLowerCase() ||
+            cat.name.toLowerCase().includes(categoryParam.toLowerCase())
+        );
+
+        if (matchedCategory) {
+            setSelectedCategoryIds([matchedCategory.id]); // выбираем только эту категорию
+        }
+    }, [searchParams, availableCategories]);
+
+    // ... остальная логика фильтрации (filteredProducts) без изменений
     const filteredProducts = useMemo(() => {
         let result = [...productsToShow];
 
-        // Категории
         if (selectedCategoryIds.length > 0) {
             result = result.filter(p =>
                 p.category?.id && selectedCategoryIds.includes(p.category.id)
             );
         }
 
-        // Бренды
         if (selectedBrandIds.length > 0) {
             result = result.filter(p =>
                 p.brand?.id && selectedBrandIds.includes(p.brand.id)
             );
         }
 
-        // Цена
         result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
-        // В наличии
         if (inStockOnly) {
             result = result.filter(p => (p.stock ?? 0) > 0);
         }
 
-        // Сортировка
         switch (sortBy) {
-            case 'price-asc':
-                result.sort((a, b) => a.price - b.price);
-                break;
-            case 'price-desc':
-                result.sort((a, b) => b.price - a.price);
-                break;
-            case 'new':
-                result.sort((a, b) => Number(b.id) - Number(a.id));
-                break;
+            case 'price-asc': result.sort((a, b) => a.price - b.price); break;
+            case 'price-desc': result.sort((a, b) => b.price - a.price); break;
+            case 'new': result.sort((a, b) => Number(b.id) - Number(a.id)); break;
             case 'popular':
-            default:
-                result.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
-                break;
+            default: result.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0)); break;
         }
 
         return result;
-    }, [
-        productsToShow,
-        selectedCategoryIds,
-        selectedBrandIds,
-        priceRange,
-        inStockOnly,
-        sortBy,
-    ]);
+    }, [productsToShow, selectedCategoryIds, selectedBrandIds, priceRange, inStockOnly, sortBy]);
 
     const resetFilters = useCallback(() => {
         setSelectedCategoryIds([]);

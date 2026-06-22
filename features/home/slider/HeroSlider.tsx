@@ -8,29 +8,29 @@ const slides = [
     {
         id: 1,
         image: '/slider/taser1.jpg',
-        badge: 'Максимальный эффект!',
-        title: 'Электрошокер',
-        highlight: 'ОСА-916 MAXI',
-        price: '2 100 ₽',
-        link: '/catalog/osa-916-maxi',
+        badge: 'Новинка!',
+        title: 'Стреляющий электрошокер',
+        highlight: 'TASER',
+        price: '5 500 ₽',
+        link: '/product/41',
     },
     {
         id: 2,
         image: '/slider/309-21.jpg',
-        badge: 'Новинка 2026',
+        badge: 'Максимальный эффект!',
         title: 'Электрошокер',
-        highlight: 'Тайфун-200',
-        price: '3 490 ₽',
-        link: '/catalog/taifun-200',
+        highlight: 'TW-309 Гепард',
+        price: '1900 ₽',
+        link: '/product/43',
     },
     {
         id: 3,
         image: '/slider/slide_916.jpg',
         badge: 'Хит продаж',
-        title: 'Налобный фонарь',
-        highlight: 'Police 80 000 Lm',
-        price: '1 890 ₽',
-        link: '/catalog/police-80000',
+        title: 'Электрошокер',
+        highlight: 'ОСА-916 MAXI',
+        price: '2 100 ₽',
+        link: '/product/42',
     },
 ];
 
@@ -40,7 +40,7 @@ export default function HeroSlider() {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % slides.length);
-        }, 5000);
+        }, 10000);
         return () => clearInterval(interval);
     }, []);
 

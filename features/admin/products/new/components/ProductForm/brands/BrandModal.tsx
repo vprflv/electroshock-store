@@ -3,6 +3,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 type BrandModalProps = {
     isOpen: boolean;
@@ -18,6 +19,7 @@ export default function BrandModal({ isOpen, onClose, onSuccess }: BrandModalPro
         if (!name.trim()) return;
 
         setIsSaving(true);
+
         try {
             const res = await fetch('/api/admin/brands', {
                 method: 'POST',
@@ -25,23 +27,42 @@ export default function BrandModal({ isOpen, onClose, onSuccess }: BrandModalPro
                 body: JSON.stringify({ name: name.trim() }),
             });
 
+            const data = await res.json();
+
             if (res.ok) {
-                const newBrand = await res.json();
-                onSuccess(newBrand);
+                toast.success('Бренд успешно создан!', {
+                    description: data.name,
+                });
+                onSuccess(data);
                 setName('');
-                onClose(); // закрываем после успеха
+                onClose();
             } else {
-                alert('Ошибка при создании бренда');
+                if (res.status === 409) {
+                    toast.error('Бренд уже существует', {
+                        description: data.error || 'Попробуйте другое название',
+                    });
+                } else if (res.status === 400) {
+                    toast.error(data.error || 'Некорректные данные');
+                } else {
+                    toast.error('Ошибка при создании бренда');
+                }
             }
         } catch (e) {
-            alert('Ошибка соединения');
+            toast.error('Ошибка соединения с сервером');
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            setName('');
+        }
+        onClose();
+    };
+
     return (
-        <Dialog.Root open={isOpen} onOpenChange={onClose}>
+        <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/80 z-50" />
 
@@ -49,7 +70,6 @@ export default function BrandModal({ isOpen, onClose, onSuccess }: BrandModalPro
                     bg-zinc-900 border border-zinc-700 rounded-3xl md:rounded-2xl
                     w-full max-w-md mx-4 z-50 overflow-hidden">
 
-                    {/* Header */}
                     <div className="px-6 pt-6 pb-4 border-b border-zinc-700">
                         <Dialog.Title className="text-xl md:text-2xl font-bold text-white">
                             Новый бренд
@@ -91,7 +111,6 @@ export default function BrandModal({ isOpen, onClose, onSuccess }: BrandModalPro
                         </div>
                     </div>
 
-                    {/* Кнопка закрытия */}
                     <Dialog.Close asChild>
                         <button className="absolute top-5 right-5 p-2 text-zinc-400 hover:text-white transition">
                             <X className="w-6 h-6" />
